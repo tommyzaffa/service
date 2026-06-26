@@ -1,0 +1,100 @@
+/* =============================================================
+   ATTO — animations.css
+   Keyframes, scroll reveals, hero motion, micro-interactions.
+   All wrapped to respect prefers-reduced-motion (see base.css).
+   ============================================================= */
+
+/* ---- Keyframes -------------------------------------------- */
+@keyframes navItemIn {
+  from { opacity: 0; transform: translateY(40px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes stepIn {
+  from { opacity: 0; transform: translateY(16px) scale(.99); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes floatBlob {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%      { transform: translate(4%, -3%) scale(1.06); }
+  66%      { transform: translate(-3%, 3%) scale(.97); }
+}
+@keyframes gradientPan {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@keyframes pulseSoft {
+  0%, 100% { opacity: .55; }
+  50%      { opacity: 1; }
+}
+
+/* ---- Hero animated background ----------------------------- */
+.hero__bg {
+  background:
+    radial-gradient(40% 50% at 18% 28%, color-mix(in srgb, var(--c-web) 36%, transparent), transparent 70%),
+    radial-gradient(38% 46% at 82% 22%, color-mix(in srgb, var(--c-social) 34%, transparent), transparent 70%),
+    radial-gradient(46% 52% at 70% 84%, color-mix(in srgb, var(--c-video) 30%, transparent), transparent 72%),
+    radial-gradient(44% 50% at 24% 80%, color-mix(in srgb, var(--c-personal) 26%, transparent), transparent 72%);
+  filter: blur(8px);
+}
+.hero__bg::after {
+  content: ""; position: absolute; inset: -20%;
+  background:
+    radial-gradient(30% 34% at 30% 40%, color-mix(in srgb, var(--c-branding) 24%, transparent), transparent 70%),
+    radial-gradient(28% 32% at 76% 64%, color-mix(in srgb, var(--c-artist) 26%, transparent), transparent 70%);
+  animation: floatBlob 18s var(--ease-in-out) infinite;
+}
+[data-theme="dark"] .hero__bg { opacity: .8; }
+
+/* grain/contrast veil so text stays readable over gradients */
+.hero::after {
+  content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background: linear-gradient(to bottom, transparent 40%, var(--bg) 100%);
+}
+
+/* hero text staggered entrance */
+.hero__kicker, .hero__title, .hero__subtitle, .hero__cta {
+  opacity: 0; animation: fadeUp .8s var(--ease) forwards;
+}
+.hero__kicker   { animation-delay: .05s; }
+.hero__title    { animation-delay: .15s; }
+.hero__subtitle { animation-delay: .30s; }
+.hero__cta      { animation-delay: .42s; }
+.hero__scroll   { animation: pulseSoft 2.4s ease-in-out infinite; }
+
+/* ---- Scroll reveal (JS toggles .in) ----------------------- */
+.reveal { opacity: 0; transform: translateY(28px); transition: opacity .7s var(--ease), transform .7s var(--ease); }
+.reveal.in { opacity: 1; transform: translateY(0); }
+.reveal[data-delay="1"] { transition-delay: .08s; }
+.reveal[data-delay="2"] { transition-delay: .16s; }
+.reveal[data-delay="3"] { transition-delay: .24s; }
+.reveal[data-delay="4"] { transition-delay: .32s; }
+
+/* ---- Menu button → X morph -------------------------------- */
+body.menu-open .menu-btn__icon span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+body.menu-open .menu-btn__icon span:nth-child(2) { opacity: 0; }
+body.menu-open .menu-btn__icon span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+/* ---- Animated total counter ------------------------------- */
+.summary-total__value { transition: transform var(--t) var(--ease); }
+.summary-total__value.bump { animation: bump .4s var(--ease); }
+@keyframes bump {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+
+/* ---- Theme transition smoothing --------------------------- */
+.theme-fade, .theme-fade * { transition: background-color var(--t) var(--ease), border-color var(--t) var(--ease), color var(--t) var(--ease) !important; }
+
+/* ---- Reduced motion: kill decorative motion --------------- */
+@media (prefers-reduced-motion: reduce) {
+  .hero__bg::after { animation: none; }
+  .hero__scroll { animation: none; }
+  .reveal { opacity: 1; transform: none; }
+  .hero__kicker, .hero__title, .hero__subtitle, .hero__cta { opacity: 1; animation: none; }
+}

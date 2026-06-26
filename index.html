@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Atto — One studio. Every service.</title>
+  <meta name="description" content="Branding, web, social, video and more — built by a young, sharp team. Answer three questions and get a tailored quote in minutes." />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Atto — One studio. Every service." />
+  <meta property="og:description" content="Answer three questions, build a tailored quote, get in touch." />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="en" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/animations.css" />
+
+  <!-- Lucide icons (placeholder icon set — see README to swap for custom) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.460.0/lucide.min.js" defer></script>
+</head>
+<body>
+
+  <!-- ============ HEADER ============ -->
+  <header class="site-header" id="header">
+    <a href="#top" class="brand" aria-label="Atto home">
+      <span class="brand__mark">A</span>
+      <span data-i18n="common.brand">Atto</span>
+      <span class="brand__note" data-i18n="common.brand_note">working name</span>
+    </a>
+
+    <div class="header-actions">
+      <button class="icon-btn" id="themeToggle" type="button" aria-label="Toggle theme" title="">
+        <svg data-lucide="sun" class="icon-sun"></svg>
+        <svg data-lucide="moon" class="icon-moon hidden"></svg>
+      </button>
+      <button class="lang-pill" id="langToggle" type="button" aria-haspopup="true" aria-expanded="false">
+        <svg data-lucide="globe" style="width:16px;height:16px"></svg>
+        <span id="langCurrent">EN</span>
+      </button>
+      <button class="menu-btn" id="menuToggle" type="button" aria-controls="navOverlay" aria-expanded="false">
+        <span data-i18n="nav.menu">Menu</span>
+        <span class="menu-btn__icon" aria-hidden="true"><span></span><span></span><span></span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ============ FULL-SCREEN MENU ============ -->
+  <nav class="nav-overlay" id="navOverlay" aria-hidden="true">
+    <div class="nav-overlay__top container">
+      <a href="#top" class="brand" data-nav-link>
+        <span class="brand__mark">A</span>
+        <span data-i18n="common.brand">Atto</span>
+      </a>
+      <button class="menu-btn" id="menuClose" type="button">
+        <span data-i18n="nav.close">Close</span>
+        <span class="menu-btn__icon" aria-hidden="true"><span></span><span></span><span></span></span>
+      </button>
+    </div>
+    <div class="nav-overlay__list container">
+      <a href="#flow" data-nav-link><span class="idx">01</span><span data-i18n="nav.start">Start</span></a>
+      <a href="#work" data-nav-link><span class="idx">02</span><span data-i18n="nav.work">Work</span></a>
+      <a href="#about" data-nav-link><span class="idx">03</span><span data-i18n="nav.about">About</span></a>
+      <a href="#contact" data-nav-link><span class="idx">04</span><span data-i18n="nav.contact">Contact</span></a>
+    </div>
+    <div class="nav-overlay__bottom container">
+      <div class="footer-langs" id="menuLangs"></div>
+      <span class="muted" data-i18n="footer.tagline">One studio. Every service.</span>
+    </div>
+  </nav>
+
+  <!-- ============ MAIN ============ -->
+  <main id="top">
+
+    <!-- HERO -->
+    <section class="hero" id="hero">
+      <div class="hero__bg" aria-hidden="true"></div>
+      <div class="container hero__inner">
+        <p class="kicker hero__kicker" data-i18n="hero.kicker">One studio. Every service.</p>
+        <h1 class="display hero__title" data-i18n="hero.title">Creative that moves the needle.</h1>
+        <p class="lead hero__subtitle" data-i18n="hero.subtitle">Branding, web, social, video and more.</p>
+        <div class="hero__cta">
+          <a href="#flow" class="btn btn--primary btn--lg" data-i18n="hero.cta">Start now</a>
+          <a href="#work" class="btn btn--ghost btn--lg" data-i18n="hero.secondary">See our work</a>
+        </div>
+      </div>
+      <a href="#flow" class="hero__scroll" aria-hidden="true">
+        <span data-i18n="hero.scroll">Scroll</span>
+        <svg data-lucide="arrow-down" style="width:16px;height:16px"></svg>
+      </a>
+    </section>
+
+    <!-- FLOW (heart of the site) -->
+    <section class="section" id="flow">
+      <div class="container">
+        <div class="section-head reveal">
+          <p class="kicker" data-i18n="flow.title">Build your quote</p>
+          <h2 class="h2" data-i18n="flow.subtitle">Three quick questions.</h2>
+        </div>
+
+        <!-- progress -->
+        <div class="flow-progress reveal" id="flowProgress">
+          <span class="flow-progress__label" id="flowStepLabel">Step 1 of 3</span>
+          <div class="flow-progress__track"><div class="flow-progress__fill" id="flowFill"></div></div>
+        </div>
+
+        <!-- Step 1 -->
+        <div class="flow-step active" id="step1" data-step="1">
+          <div class="flow-step__head">
+            <h3 class="h3" data-i18n="flow.q1.title">Who are you?</h3>
+            <p class="flow-step__hint" data-i18n="flow.q1.hint"></p>
+          </div>
+          <div class="choice-grid choice-grid--2" id="step1Grid"></div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="flow-step" id="step2" data-step="2">
+          <div class="flow-step__head">
+            <h3 class="h3" data-i18n="flow.q2.title">What kind?</h3>
+            <p class="flow-step__hint" data-i18n="flow.q2.hint"></p>
+          </div>
+          <div class="choice-grid choice-grid--auto" id="step2Grid"></div>
+          <div class="flow-nav">
+            <button class="btn btn--ghost" data-flow-back type="button" data-i18n="flow.back">Back</button>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="flow-step" id="step3" data-step="3">
+          <div class="flow-step__head">
+            <h3 class="h3" data-i18n="flow.q3.title">What do you need?</h3>
+            <p class="flow-step__hint" data-i18n="flow.q3.hint"></p>
+          </div>
+          <div class="choice-grid choice-grid--auto" id="step3Grid"></div>
+          <div class="flow-nav">
+            <button class="btn btn--ghost" data-flow-back type="button" data-i18n="flow.back">Back</button>
+            <button class="btn btn--primary" id="flowSeeResults" type="button" data-i18n="flow.next">Next</button>
+          </div>
+        </div>
+
+        <!-- Result -->
+        <div class="flow-step" id="stepResult" data-step="4">
+          <div class="flow-step__head">
+            <h3 class="h3" data-i18n="flow.result.title">Recommended packages</h3>
+            <p class="flow-step__hint" data-i18n="flow.result.subtitle"></p>
+          </div>
+          <div id="resultGroups"></div>
+          <div class="flow-nav">
+            <button class="btn btn--ghost" data-flow-back type="button" data-i18n="flow.back">Back</button>
+            <button class="btn btn--ghost" id="flowRestart" type="button" data-i18n="flow.restart">Start over</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- QUOTE / CONFIGURATOR -->
+    <section class="section" id="quote" style="background:var(--bg-soft)">
+      <div class="container">
+        <div class="section-head reveal">
+          <p class="kicker" data-i18n="quote.title">Your quote</p>
+          <h2 class="h2" data-i18n="quote.title">Your quote</h2>
+          <p class="lead" data-i18n="quote.subtitle"></p>
+        </div>
+
+        <div id="quoteEmpty" class="result-empty" data-i18n="quote.empty">Pick a package to start.</div>
+
+        <div class="quote-layout hidden" id="quoteLayout">
+          <div class="quote-main">
+            <div class="quote-block">
+              <h3 class="quote-block__title" data-i18n="quote.base">Base package</h3>
+              <div id="quoteBase"></div>
+            </div>
+            <div class="quote-block">
+              <h3 class="quote-block__title" data-i18n="quote.addons">Add-ons</h3>
+              <div class="option-list" id="quoteAddons"></div>
+            </div>
+            <div class="quote-block">
+              <h3 class="quote-block__title" data-i18n="quote.services">Extra & recurring services</h3>
+              <div class="option-list" id="quoteServices"></div>
+            </div>
+          </div>
+
+          <aside class="quote-summary" aria-live="polite">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px">
+              <span class="quote-summary__title" data-i18n="form.summary">Your selection</span>
+              <div class="currency-switch" id="currencySwitch" role="group" aria-label="Currency">
+                <button type="button" data-cur="CHF" aria-current="true">CHF</button>
+                <button type="button" data-cur="EUR">EUR</button>
+              </div>
+            </div>
+            <div id="summaryRows"></div>
+            <div class="summary-total">
+              <span class="summary-total__label" data-i18n="quote.total">Estimated total</span>
+              <span class="summary-total__value" id="summaryTotal">—</span>
+            </div>
+            <p class="summary-disclaimer" data-i18n="quote.disclaimer"></p>
+            <a href="#contact" class="btn btn--primary" id="quoteContinue" data-i18n="quote.continue">Request this quote</a>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <!-- WORK / PORTFOLIO -->
+    <section class="section" id="work">
+      <div class="container">
+        <div class="section-head reveal">
+          <p class="kicker" data-i18n="work.kicker">Selected work</p>
+          <h2 class="h2" data-i18n="work.title">Proof, not promises.</h2>
+          <p class="lead" data-i18n="work.subtitle"></p>
+        </div>
+        <div class="work-grid" id="workGrid"></div>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section class="section" id="about" style="background:var(--bg-soft)">
+      <div class="container">
+        <div class="section-head reveal">
+          <p class="kicker" data-i18n="about.kicker">About us</p>
+          <h2 class="h2" data-i18n="about.title">A young team that gets things done.</h2>
+          <p class="lead" data-i18n="about.body"></p>
+        </div>
+        <div class="team-grid" id="teamGrid"></div>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section class="section" id="contact">
+      <div class="container">
+        <div class="section-head reveal">
+          <p class="kicker" data-i18n="form.title">Let's talk</p>
+          <h2 class="h2" data-i18n="form.title">Let's talk</h2>
+          <p class="lead" data-i18n="form.subtitle"></p>
+        </div>
+
+        <div class="form-layout">
+          <!-- Formspree form. Replace [FORMSPREE_FORM_ID] (see README). -->
+          <form id="contactForm" action="https://formspree.io/f/[FORMSPREE_FORM_ID]" method="POST" novalidate>
+            <div class="field-row">
+              <div class="field">
+                <label for="f-name" data-i18n="form.name">Full name</label>
+                <input id="f-name" name="name" type="text" autocomplete="name" />
+              </div>
+              <div class="field">
+                <label for="f-email" data-i18n="form.email">Email</label>
+                <input id="f-email" name="email" type="email" autocomplete="email" required />
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label for="f-phone" data-i18n="form.phone">Phone</label>
+                <input id="f-phone" name="phone" type="tel" autocomplete="tel" />
+              </div>
+              <div class="field">
+                <label for="f-company" data-i18n="form.company">Company / project</label>
+                <input id="f-company" name="company" type="text" autocomplete="organization" />
+              </div>
+            </div>
+            <div class="field">
+              <label for="f-message" data-i18n="form.message">Tell us more</label>
+              <textarea id="f-message" name="message"></textarea>
+            </div>
+            <div class="field">
+              <label for="f-lang" data-i18n="form.langpref">Preferred language</label>
+              <select id="f-lang" name="preferred_language">
+                <option value="English">English</option>
+                <option value="Italiano">Italiano</option>
+                <option value="Deutsch">Deutsch</option>
+                <option value="Français">Français</option>
+              </select>
+            </div>
+
+            <!-- Auto summary (hidden, filled by configurator) -->
+            <input type="hidden" name="client_category" id="hf-category" />
+            <input type="hidden" name="sectors" id="hf-sectors" />
+            <input type="hidden" name="package" id="hf-package" />
+            <input type="hidden" name="addons" id="hf-addons" />
+            <input type="hidden" name="extra_services" id="hf-services" />
+            <input type="hidden" name="estimated_total" id="hf-total" />
+            <input type="hidden" name="currency" id="hf-currency" />
+            <input type="hidden" name="_subject" value="New lead from Atto site" />
+            <!-- Honeypot anti-spam -->
+            <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px" aria-hidden="true" />
+
+            <label class="checkbox">
+              <input type="checkbox" id="f-privacy" name="privacy_consent" value="yes" required />
+              <span data-i18n="form.privacy">I agree to the privacy policy.</span>
+            </label>
+
+            <button class="btn btn--primary btn--lg" type="submit" id="formSubmit" style="margin-top:16px;width:100%">
+              <span data-i18n="form.submit">Send request</span>
+            </button>
+            <div class="form-status" id="formStatus" role="status"></div>
+          </form>
+
+          <aside class="form-aside">
+            <h3 class="form-aside__title" data-i18n="form.summary">Your selection</h3>
+            <div id="formSummary"></div>
+          </aside>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="#top" class="brand">
+            <span class="brand__mark">A</span>
+            <span data-i18n="common.brand">Atto</span>
+            <span class="brand__note" data-i18n="common.brand_note">working name</span>
+          </a>
+          <p class="lead" data-i18n="footer.tagline">One studio. Every service.</p>
+        </div>
+        <div class="footer-col">
+          <h4 data-i18n="footer.contact">Contact</h4>
+          <a href="mailto:hello@example.com">hello@example.com</a>
+          <a href="#contact" data-i18n="nav.contact">Contact</a>
+          <a href="#" data-i18n="footer.legal">Privacy & cookies</a>
+        </div>
+        <div class="footer-col">
+          <h4 data-i18n="nav.language">Language</h4>
+          <div class="footer-langs" id="footerLangs"></div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© <span id="year"></span> <span data-i18n="common.brand">Atto</span> <span data-i18n="footer.placeholder_brand">[WORKING NAME]</span>. <span data-i18n="footer.rights">All rights reserved.</span></span>
+        <span data-i18n="footer.follow">Follow</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Cookie banner -->
+  <div class="cookie" id="cookie">
+    <p data-i18n="footer.legal">Privacy & cookies</p>
+    <button class="btn btn--primary" id="cookieOk" type="button">OK</button>
+  </div>
+
+  <!-- ============ SCRIPTS ============ -->
+  <script src="js/data.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/flow.js"></script>
+  <script src="js/configurator.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
