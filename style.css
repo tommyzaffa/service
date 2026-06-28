@@ -837,14 +837,14 @@ html:has(body[data-bg="field"]){scroll-snap-type:y mandatory}
   .cwork__strip .cplate{aspect-ratio:1/1}
   .clink{margin-top:16px}
   .cine__rail{bottom:14px;left:16px}
-  /* LAST scene footer (mobile address-bar fix). scroll-snap-align:end pins the
-     snap point to the document bottom: it's always reachable and tracks the bar
-     smoothly (no discrete re-snap jump). The KEY vs the old centred version:
-     anchor the CTA+footer cluster to the BOTTOM (flex-end) so both stay glued to
-     the viewport bottom when the bar hides — the extra height opens at the TOP as
-     a harmless scene sliver instead of shoving the content up (the old "scatto").
-     Needs validation on a REAL phone (headless preview can't toggle the bar). */
-  .scene--cta{scroll-snap-align:end}
-  .scene--cta .scene__pin{justify-content:flex-end;padding-top:84px;padding-bottom:0}
-  .scene--cta .scene__c{flex:0 0 auto;margin-bottom:clamp(20px,5vh,40px)}
+  /* LAST scene footer (mobile address-bar fix). The "scatto" is the SNAP ENGINE
+     re-aligning the last scene whenever the address bar shows/hides (a viewport
+     resize forces mandatory snap to re-evaluate). Taking the last scene OUT of
+     the snap (scroll-snap-align:none) removes the only snap point that can move,
+     so a bar toggle no longer re-snaps it = no jump. Scenes 1-5 keep snapping.
+     The scene is a full 100svh with the footer inside it, so mandatory doesn't
+     bounce back to scene 5 once the cta fills the viewport. Content stays CENTRED
+     like desktop (inherits .scene--cta .scene__c{flex:1;justify-content:center}),
+     footer pinned at the bottom (desktop pin padding-bottom:0). */
+  .scene--cta{scroll-snap-align:none}
 }
