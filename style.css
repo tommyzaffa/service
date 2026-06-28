@@ -165,6 +165,7 @@ body.nav-open .overlay__foot{opacity:1}
 /* ---- buttons ---- */
 .btn{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:10px;cursor:none;
   padding:16px 28px;border-radius:999px;border:1px solid var(--pink);
+  background:transparent;-webkit-appearance:none;appearance:none;color:var(--ink);
   font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase}
 .btn span{position:relative;z-index:2;transition:color .4s var(--ease)}
 .btn::before{content:"";position:absolute;inset:0;background:var(--pink);
@@ -802,3 +803,26 @@ html:has(body[data-bg="field"]){scroll-snap-type:y mandatory}
 @keyframes introDotPulse{0%,100%{box-shadow:0 0 0 0 var(--spark-soft)}50%{box-shadow:0 0 0 7px transparent}}
 @keyframes introOut{to{transform:scale(1.12);opacity:0;filter:blur(3px)}}
 @media (prefers-reduced-motion: reduce){.intro{display:none}}
+
+/* mobile: KEEP the cinematic snap-scroll but make it robust on phones —
+   - svh-tall scenes so the iOS address bar showing/hiding no longer mismatches
+     100vh and causes seams/flashes between scenes
+   - a cross-fade floor (opacity never hits 0) + gentler parallax so fast snaps
+     don't dip to a dark flash
+   - the footer is itself a snap target, so mandatory snap lets you rest on it
+     instead of bouncing back to the last scene
+   - the work scene is shrunk to fit one screen so its link clears the rail */
+@media (max-width:760px){
+  .scene{height:100svh}
+  .scene__pin{padding:84px clamp(20px,6vw,40px) 60px}
+  .scene__c{max-height:none;
+    opacity:calc(.35 + var(--vis,0)*.65);
+    transform:translateY(calc(var(--off,0)*26px)) scale(calc(.99 + var(--vis,0)*.01))}
+  .scene__bg{opacity:calc(.25 + var(--vis,0)*.65)}
+  .foot{scroll-snap-align:end}
+  .scene--work .cwork__h{font-size:clamp(1.8rem,7vw,2.4rem);margin-bottom:14px}
+  .cwork__strip{gap:10px}
+  .cwork__strip .cplate{aspect-ratio:1/1}
+  .clink{margin-top:16px}
+  .cine__rail{bottom:14px;left:16px}
+}
