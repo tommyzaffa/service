@@ -837,4 +837,9 @@ html:has(body[data-bg="field"]){scroll-snap-type:y mandatory}
   .cwork__strip .cplate{aspect-ratio:1/1}
   .clink{margin-top:16px}
   .cine__rail{bottom:14px;left:16px}
+  /* last scene: single snap point = its END (= document bottom, footer fully
+     shown). All mid-points between scene 5 and the footer are ignored. The
+     address-bar re-snap that this would otherwise cause is suppressed in JS
+     (initCine resize handler). Content stays centred (desktop cta layout). */
+  .scene--cta{scroll-snap-align:end}
 }

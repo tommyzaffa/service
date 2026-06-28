@@ -502,14 +502,6 @@
         scenes.forEach((s, idx) => s.classList.toggle("is-active", idx === active));
         if (curEl) curEl.textContent = String(active + 1).padStart(2, "0");
         if (nameEl) nameEl.textContent = scenes[active].dataset.name || "";
-        /* MOBILE last-scene footer fix: the dynamic address bar resizes the
-           viewport and mandatory snap RE-ALIGNS the last scene = the "scatto".
-           Disable snap ONLY while the last scene is active so its footer scrolls
-           freely and a bar toggle can't re-snap it; restore mandatory (CSS) on
-           every other scene. Desktop (>760px) is never touched. */
-        document.documentElement.style.scrollSnapType =
-          (active === scenes.length - 1 && matchMedia("(max-width:760px)").matches)
-            ? "none" : "";
       }
       if (progEl) {
         const max = document.documentElement.scrollHeight - vh;
@@ -518,6 +510,22 @@
       if (railEl) railEl.classList.toggle("is-hidden", active === scenes.length - 1);
       requestAnimationFrame(frame);
     })();
+    /* MOBILE last-scene footer "scatto" fix. The last scene snaps with
+       scroll-snap-align:end (CSS, mobile) so its ONLY snap point is the document
+       bottom = footer fully shown (every mid-point ignored, as wanted). The bug
+       is that the iOS/Android address bar show/hide fires a 'resize' and, with
+       mandatory snap, the browser re-aligns that end point to the new viewport
+       = the jump. So we SUSPEND snap for the duration of any viewport resize and
+       restore it once the bar has settled — the toggle can no longer re-snap.
+       Mobile-only; desktop snap is never touched. */
+    let snapRestore;
+    addEventListener("resize", () => {
+      if (!matchMedia("(max-width:760px)").matches) return;
+      const root = document.documentElement;
+      root.style.scrollSnapType = "none";
+      clearTimeout(snapRestore);
+      snapRestore = setTimeout(() => { root.style.scrollSnapType = ""; }, 450);
+    }, { passive: true });
   }
 
   /* ============ intro / preloader — favicon mark, once per session ============ */
