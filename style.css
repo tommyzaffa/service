@@ -815,21 +815,21 @@ html:has(body[data-bg="field"]){scroll-snap-type:y mandatory}
 @media (prefers-reduced-motion: reduce){.intro{display:none}}
 
 /* mobile: KEEP the cinematic snap-scroll but make it robust on phones —
-   - ALL scenes use 100dvh: the dynamic viewport always equals the CURRENT
-     visual viewport, so every scene fills the screen exactly. This avoids both
-     the old 100vh bleed/seam (vh == large viewport, taller than the screen when
-     the address bar is shown) AND the svh footer-gap (svh == small viewport,
-     shorter than the screen when the bar hides). It must be the SAME unit on
-     EVERY scene — mixing svh on 1-5 with dvh on the last scene made the 5->6
-     boundary mismatch as the bar animated, so scene 6 arrived with the footer
-     cut and then "snapped" into place once dvh caught up.
+   - svh-tall scenes: svh == the SMALL (address-bar-visible) viewport and is a
+     STABLE value that does NOT change as the bar shows/hides, so scenes never
+     resize mid-scroll = no jumps. (100vh == large viewport -> too tall when the
+     bar shows = bleed/seam; 100dvh resizes on every bar toggle = jumps on every
+     scene. svh is the stable middle ground.)
+   - the LAST scene (CTA + footer, footer INSIDE it) uses scroll-snap-align:end
+     instead of start: its snap point is then the document bottom, which is
+     ALWAYS reachable, so mandatory snap can't bounce against an unreachable
+     start point when the bar is hidden (viewport > svh). The footer therefore
+     always sits at the true bottom of the screen, integral to the section.
    - a cross-fade floor (opacity never hits 0) + gentler parallax so fast snaps
      don't dip to a dark flash
-   - the footer lives INSIDE the last scene (CTA + footer = one dvh snap target),
-     so it always hugs the true bottom of the viewport
    - the work scene is shrunk to fit one screen so its link clears the rail */
 @media (max-width:760px){
-  .scene{height:100dvh}
+  .scene{height:100svh}
   .scene__pin{padding:84px clamp(20px,6vw,40px) 60px}
   .scene__c{max-height:none;
     opacity:calc(.42 + var(--vis,0)*.58);
@@ -840,6 +840,7 @@ html:has(body[data-bg="field"]){scroll-snap-type:y mandatory}
   .cwork__strip .cplate{aspect-ratio:1/1}
   .clink{margin-top:16px}
   .cine__rail{bottom:14px;left:16px}
+  .scene--cta{scroll-snap-align:end}
   .scene--cta .ccta__h{margin-bottom:clamp(20px,5vw,32px)}
   .scene--cta .foot{padding:20px clamp(20px,4vw,52px)}
 }
