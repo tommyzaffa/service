@@ -38,3 +38,6 @@ build/
 *.log
 *.tmp
 tmp/
+
+# ---- Claude Code (config locale di macchina) ----
+.claude/settings.local.json
