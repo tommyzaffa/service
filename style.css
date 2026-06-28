@@ -605,6 +605,9 @@ a.cinfo__row:hover .cinfo__value{color:var(--pink)}
 html:has(body[data-bg="field"]){scroll-snap-type:y mandatory}
 .cine{position:relative;z-index:3}
 .scene{position:relative;height:100vh;scroll-snap-align:start;scroll-snap-stop:always}
+/* last scene releases so you can keep scrolling onto the footer (a snap target) */
+.scene--cta{scroll-snap-stop:normal}
+html:has(body[data-bg="field"]) .foot{scroll-snap-align:end}
 .scene__pin{position:relative;height:100%;display:grid;place-items:center;
   overflow:hidden;pointer-events:none;padding:14vh clamp(22px,6vw,90px)}
 /* per-scene decorative tint, fades with the scene */
@@ -619,7 +622,7 @@ html:has(body[data-bg="field"]){scroll-snap-type:y mandatory}
 /* scene content — opacity + parallax lift driven by how centred the scene is
    (--off: 0 centred, +below / -above ; --vis: 1 centred -> 0 a screen away) */
 .scene__c{position:relative;width:min(1180px,92vw);max-height:84vh;
-  opacity:var(--vis,0);
+  opacity:calc(.4 + var(--vis,0)*.6);
   transform:translateY(calc(var(--off,0)*60px)) scale(calc(.965 + var(--vis,0)*.035));
   pointer-events:none;will-change:transform,opacity}
 .scene.is-active .scene__c{pointer-events:auto}
@@ -819,7 +822,6 @@ html:has(body[data-bg="field"]){scroll-snap-type:y mandatory}
     opacity:calc(.35 + var(--vis,0)*.65);
     transform:translateY(calc(var(--off,0)*26px)) scale(calc(.99 + var(--vis,0)*.01))}
   .scene__bg{opacity:calc(.25 + var(--vis,0)*.65)}
-  .foot{scroll-snap-align:end}
   .scene--work .cwork__h{font-size:clamp(1.8rem,7vw,2.4rem);margin-bottom:14px}
   .cwork__strip{gap:10px}
   .cwork__strip .cplate{aspect-ratio:1/1}

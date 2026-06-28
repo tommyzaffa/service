@@ -265,20 +265,37 @@
     const cols = ["#5FB3A6", "#2F7E72", "#A7D8CF", "#3E8C80"];
     const mode = document.body.dataset.bg || "field";
 
-    if (mode === "field") {                       /* HOME — organic flow field */
-      const N = Math.round(Math.min(2000, Math.max(700, W * H / (5200 * DPR))));
-      const P = []; const spawn = p => { p.x = Math.random() * W; p.y = Math.random() * H; p.life = 80 + Math.random() * 240; p.col = Math.random() < .08 ? "#FF8A5E" : cols[(Math.random() * cols.length) | 0]; };
-      for (let i = 0; i < N; i++) { const p = {}; spawn(p); P.push(p); }
-      const glows = [{ h: "#2F7E72", ox: .28, oy: .32, sx: .00015, sy: .00011, r: .5 }, { h: "#5FB3A6", ox: .74, oy: .66, sx: .00011, sy: .00017, r: .42 }, { h: "#1E4A44", ox: .55, oy: .85, sx: .00018, sy: .00009, r: .55 }, { h: "#FF8A5E", ox: .86, oy: .16, sx: .00014, sy: .00012, r: .26 }];
-      let t = 0, tm = 0; const S = .0016;
-      const field = (px, py) => (Math.sin(px * S + t) + Math.cos(py * S * 1.2 - t * .7) + Math.sin((px + py) * S * .6 + t * .5)) * 1.8;
+    if (mode === "field") {                       /* HOME — drifting embers / sparks (like a campfire) */
+      const N = Math.round(Math.min(820, Math.max(340, W * H / (12000 * DPR))));
+      const P = [];
+      const spawn = (p, init) => {
+        p.x = Math.random() * W;
+        p.y = init ? Math.random() * H : H + Math.random() * 60 * DPR;   // rise up from below
+        p.vx = (Math.random() - .5) * .22 * DPR;
+        p.vy = -(.18 + Math.random() * .5) * DPR;
+        p.r = (.55 + Math.random() * 1.5) * DPR;
+        p.life = init ? Math.random() * 200 : 0; p.max = 240 + Math.random() * 380;
+        p.fr = .03 + Math.random() * .06; p.ph = Math.random() * 6.28; p.wob = Math.random() * 6.28;
+        p.col = Math.random() < .14 ? "#FF8A5E" : cols[(Math.random() * cols.length) | 0];
+      };
+      for (let i = 0; i < N; i++) { const p = {}; spawn(p, true); P.push(p); }
+      const R = 150 * DPR;
       (function frame() {
-        t += .0009; tm += 16;
-        x.globalCompositeOperation = "source-over"; x.fillStyle = "rgba(12,14,15,.05)"; x.fillRect(0, 0, W, H);
-        x.globalCompositeOperation = "lighter"; x.globalAlpha = .05;
-        glows.forEach((b, i) => { const gx = (b.ox + Math.sin(tm * b.sx + i) * .12 + (mx > 0 ? (mx / W - .5) * .05 : 0)) * W, gy = (b.oy + Math.cos(tm * b.sy + i) * .12 + (my > 0 ? (my / H - .5) * .05 : 0)) * H, rad = b.r * Math.min(W, H), g = x.createRadialGradient(gx, gy, 0, gx, gy, rad); g.addColorStop(0, b.h); g.addColorStop(1, b.h + "00"); x.fillStyle = g; x.beginPath(); x.arc(gx, gy, rad, 0, 7); x.fill(); });
-        x.lineWidth = 1.15 * DPR; x.lineCap = "round"; const R = 190 * DPR;
-        for (const p of P) { const a = field(p.x, p.y); let vx = Math.cos(a), vy = Math.sin(a); const dx = p.x - mx, dy = p.y - my, d2 = dx * dx + dy * dy; if (d2 < R * R) { const d = Math.sqrt(d2) || 1, f = (1 - d / R) * 2.8; vx += dx / d * f; vy += dy / d * f; } const sp = 1.7 * DPR, nx = p.x + vx * sp, ny = p.y + vy * sp; x.strokeStyle = p.col; x.globalAlpha = .16; x.beginPath(); x.moveTo(p.x, p.y); x.lineTo(nx, ny); x.stroke(); p.x = nx; p.y = ny; if (--p.life < 0 || nx < 0 || nx > W || ny < 0 || ny > H) spawn(p); }
+        x.globalCompositeOperation = "source-over"; x.fillStyle = "rgba(12,14,15,.20)"; x.fillRect(0, 0, W, H);
+        x.globalCompositeOperation = "lighter";
+        for (const p of P) {
+          p.wob += .024;
+          let vx = p.vx + Math.sin(p.wob) * .16 * DPR, vy = p.vy;
+          const dx = p.x - mx, dy = p.y - my, d2 = dx * dx + dy * dy;
+          if (d2 < R * R) { const d = Math.sqrt(d2) || 1, f = (1 - d / R) * 1.3; vx += dx / d * f; vy += dy / d * f; }
+          p.x += vx; p.y += vy; p.life++;
+          const lk = Math.min(1, p.life / 36) * Math.max(0, 1 - p.life / p.max);
+          const flick = .5 + .5 * Math.sin(p.ph + p.life * p.fr);
+          x.globalAlpha = Math.max(0, lk * flick * .9);
+          x.fillStyle = p.col;
+          x.beginPath(); x.arc(p.x, p.y, p.r, 0, 7); x.fill();
+          if (p.life > p.max || p.y < -12 * DPR || p.x < -12 * DPR || p.x > W + 12 * DPR) spawn(p);
+        }
         x.globalAlpha = 1; requestAnimationFrame(frame);
       })();
 
@@ -453,7 +470,7 @@
       scenes.forEach((s, idx) => {
         const r = s.getBoundingClientRect();
         const off = (r.top + r.height / 2 - vh / 2) / vh;   // 0 = centred, ±1 = a screen away
-        const vis = clamp(1 - Math.abs(off) * 1.7, 0, 1);
+        const vis = clamp(1 - Math.abs(off) * 1.3, 0, 1);
         s.style.setProperty("--off", off.toFixed(3));
         s.style.setProperty("--vis", vis.toFixed(3));
         const d = Math.abs(off);
