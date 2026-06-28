@@ -507,9 +507,9 @@
            Disable snap ONLY while the last scene is active so its footer scrolls
            freely and a bar toggle can't re-snap it; restore mandatory (CSS) on
            every other scene. Desktop (>760px) is never touched. */
-        if (matchMedia("(max-width:760px)").matches)
-          document.documentElement.style.scrollSnapType =
-            active === scenes.length - 1 ? "none" : "";
+        document.documentElement.style.scrollSnapType =
+          (active === scenes.length - 1 && matchMedia("(max-width:760px)").matches)
+            ? "none" : "";
       }
       if (progEl) {
         const max = document.documentElement.scrollHeight - vh;
