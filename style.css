@@ -815,20 +815,22 @@ html:has(body[data-bg="field"]){scroll-snap-type:y mandatory}
 @media (prefers-reduced-motion: reduce){.intro{display:none}}
 
 /* mobile: KEEP the cinematic snap-scroll but make it robust on phones —
-   - svh-tall scenes: svh == the SMALL (address-bar-visible) viewport and is a
-     STABLE value that does NOT change as the bar shows/hides, so scenes never
-     resize mid-scroll = no jumps. (100vh == large viewport -> too tall when the
-     bar shows = bleed/seam; 100dvh resizes on every bar toggle = jumps on every
-     scene. svh is the stable middle ground.)
-   - the LAST scene (CTA + footer, footer INSIDE it) uses scroll-snap-align:end
-     instead of start: its snap point is then the document bottom, which is
-     ALWAYS reachable, so mandatory snap can't bounce against an unreachable
-     start point when the bar is hidden (viewport > svh). The footer therefore
-     always sits at the true bottom of the screen, integral to the section.
+   - svh-tall scenes: svh == the SMALL (address-bar-visible) viewport, a STABLE
+     value that does NOT change as the bar shows/hides, so scenes never resize
+     mid-scroll = no jumps. (100vh == large viewport -> too tall when the bar
+     shows = seam; 100dvh resizes on every bar toggle = jumps on every scene.)
+   - snap-type is PROXIMITY on mobile (mandatory stays on desktop). With
+     mandatory, when the bar hides on the way down the viewport grows past svh
+     so the last scene can't fill it and snap BOUNCES trying to re-align = the
+     "stacco" on the last scene + footer. Proximity still snaps on swipes
+     (scroll-snap-stop:always keeps it one-section-per-gesture) but does NOT
+     force a re-align, so the last scene + footer rests naturally and bar
+     toggles never trigger a jump. The footer lives INSIDE the cta scene.
    - a cross-fade floor (opacity never hits 0) + gentler parallax so fast snaps
      don't dip to a dark flash
    - the work scene is shrunk to fit one screen so its link clears the rail */
 @media (max-width:760px){
+  html:has(body[data-bg="field"]){scroll-snap-type:y mandatory}
   .scene{height:100svh}
   .scene__pin{padding:84px clamp(20px,6vw,40px) 60px}
   .scene__c{max-height:none;
@@ -840,7 +842,13 @@ html:has(body[data-bg="field"]){scroll-snap-type:y mandatory}
   .cwork__strip .cplate{aspect-ratio:1/1}
   .clink{margin-top:16px}
   .cine__rail{bottom:14px;left:16px}
-  .scene--cta{scroll-snap-align:end}
-  .scene--cta .ccta__h{margin-bottom:clamp(20px,5vw,32px)}
-  .scene--cta .foot{padding:20px clamp(20px,4vw,52px)}
+  /* On mobile the iOS address bar shrinks/grows the viewport, so DON'T pin the
+     footer to the exact viewport bottom (flex:1 does that on desktop). Instead
+     stack CTA content + footer naturally from the top: the footer always hugs
+     the content and is fully visible the instant you arrive, no matter the
+     viewport height -> never half-out, never shifts up when the bar hides. */
+  .scene--cta .scene__pin{justify-content:flex-start;padding-top:96px}
+  .scene--cta .scene__c{flex:0 0 auto;min-height:0;justify-content:flex-start}
+  .scene--cta .ccta__h{font-size:clamp(2rem,7.5vw,2.8rem);margin-bottom:clamp(16px,4vw,26px)}
+  .scene--cta .foot{padding:20px clamp(20px,4vw,52px) 28px}
 }
