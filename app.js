@@ -502,6 +502,12 @@
         scenes.forEach((s, idx) => s.classList.toggle("is-active", idx === active));
         if (curEl) curEl.textContent = String(active + 1).padStart(2, "0");
         if (nameEl) nameEl.textContent = scenes[active].dataset.name || "";
+        // MOBILE only: disable CSS snap while the LAST (footer) scene is active so a
+        // moving address bar can't re-snap it (= the "scatto"); "" restores the CSS
+        // mandatory snap on every other scene / on desktop. Desktop untouched.
+        document.documentElement.style.scrollSnapType =
+          (active === scenes.length - 1 && matchMedia("(max-width:760px)").matches)
+            ? "none" : "";
       }
       if (progEl) {
         const max = document.documentElement.scrollHeight - vh;
@@ -510,93 +516,6 @@
       if (railEl) railEl.classList.toggle("is-hidden", active === scenes.length - 1);
       requestAnimationFrame(frame);
     })();
-  }
-
-  /* ============ MOBILE pagination (replaces CSS scroll-snap on phones) ============
-     CSS scroll-snap + the iOS/Android dynamic address bar are incompatible for a
-     footer-bearing last scene: a bar show/hide resizes the viewport and the snap
-     engine re-aligns the scene = the "scatto". So on mobile we turn CSS snap OFF
-     (style.css mobile block) and drive the scroll ourselves: one swipe = one
-     scene, animated to a target computed from the LIVE viewport. The LAST scene
-     targets the document bottom (maxScroll) so the footer is always fully shown.
-     Programmatic scroll does not trigger the address-bar hide, so the viewport
-     stays put during the move = no conflict. Desktop keeps CSS snap, untouched. */
-  function initPaginate() {
-    const cine = document.getElementById("cine"); if (!cine) return;
-    const scenes = [...cine.querySelectorAll("[data-scene]")]; if (!scenes.length) return;
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return; // let it scroll normally
-    const isMobile = () => matchMedia("(max-width:760px)").matches;
-    const last = scenes.length - 1;
-    const maxScroll = () => (document.scrollingElement || document.documentElement).scrollHeight - innerHeight;
-    // live target: last scene bottom-aligns (footer fully shown), others top-align
-    const targetFor = i => Math.max(0, Math.min(i >= last ? maxScroll() : scenes[i].offsetTop, maxScroll()));
-    const currentIndex = () => {
-      const y = scrollY; let best = 0, bd = Infinity;
-      scenes.forEach((s, i) => { const d = Math.abs(targetFor(i) - y); if (d < bd) { bd = d; best = i; } });
-      return best;
-    };
-    let animating = false, raf = 0;
-    const easeOut = p => 1 - Math.pow(1 - p, 3);
-    function tween(to, dur) {
-      cancelAnimationFrame(raf);
-      const from = scrollY, dist = to - from, t0 = performance.now();
-      if (Math.abs(dist) < 2) return;
-      animating = true;
-      (function step(now) {
-        const p = Math.min(1, (now - t0) / dur);
-        scrollTo(0, from + dist * easeOut(p));
-        if (p < 1) raf = requestAnimationFrame(step);
-        else animating = false;
-      })(t0);
-    }
-    const go = (i, dur) => tween(targetFor(Math.max(0, Math.min(last, i))), dur || 460);
-    const active = () => isMobile() && !document.body.classList.contains("nav-open");
-    /* ---- touch: the page FOLLOWS the finger during the drag (instant response,
-       native feel; programmatic scroll still doesn't hide the address bar), then
-       settles to a scene on release with a velocity-aware flick. ---- */
-    let sy = 0, sx = 0, startScroll = 0, startIdx = 0, dragging = false,
-        axis = null, lastY = 0, lastT = 0, vel = 0;
-    addEventListener("touchstart", e => {
-      if (!active()) return;
-      cancelAnimationFrame(raf); animating = false;          // grab mid-animation
-      const t = e.touches[0];
-      sy = lastY = t.clientY; sx = t.clientX; startScroll = scrollY;
-      startIdx = currentIndex(); lastT = performance.now(); vel = 0;
-      dragging = true; axis = null;
-    }, { passive: true });
-    addEventListener("touchmove", e => {
-      if (!dragging || !active()) return;
-      const t = e.touches[0], dy = t.clientY - sy, dx = t.clientX - sx;
-      if (axis === null && (Math.abs(dy) > 6 || Math.abs(dx) > 6))
-        axis = Math.abs(dy) >= Math.abs(dx) ? "y" : "x";
-      if (axis !== "y") return;                               // let horizontal gestures be
-      e.preventDefault();
-      scrollTo(0, Math.max(0, Math.min(startScroll - dy, maxScroll())));  // follow finger 1:1
-      const now = performance.now(), dt = now - lastT;
-      if (dt > 0) vel = (t.clientY - lastY) / dt;             // px/ms, negative = finger up
-      lastY = t.clientY; lastT = now;
-    }, { passive: false });
-    addEventListener("touchend", e => {
-      if (!dragging) return;
-      dragging = false;
-      if (axis !== "y") return;                               // a tap / horizontal -> let clicks through
-      const dragged = sy - ((e.changedTouches[0] || {}).clientY ?? sy); // >0 = up = next
-      const flick = Math.abs(vel) > 0.3;                      // quick swipe
-      let target;
-      if (flick) target = startIdx + (vel < 0 ? 1 : -1);      // finger up -> next scene
-      else if (Math.abs(dragged) > innerHeight * 0.2) target = startIdx + (dragged > 0 ? 1 : -1);
-      else target = currentIndex();                           // small move -> settle to nearest
-      go(target, flick ? 360 : 480);                          // faster settle for a flick
-    }, { passive: true });
-    // ---- wheel (small-width trackpad/mouse) ----
-    let wlock = false;
-    addEventListener("wheel", e => {
-      if (!active()) return;
-      e.preventDefault();
-      if (animating || wlock || Math.abs(e.deltaY) < 8) return;
-      wlock = true; setTimeout(() => { wlock = false; }, 560);
-      go(currentIndex() + (e.deltaY > 0 ? 1 : -1));
-    }, { passive: false });
   }
 
   /* ============ intro / preloader — favicon mark, once per session ============ */
@@ -762,7 +681,6 @@
     initWizard();
     initReveals();
     initCine();
-    initPaginate();
     initHomeMotion();
 
     document.querySelectorAll("#year").forEach(y => y.textContent = new Date().getFullYear());
