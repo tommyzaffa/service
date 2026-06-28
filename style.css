@@ -819,8 +819,10 @@ html:has(body[data-bg="field"]){scroll-snap-type:y mandatory}
      100vh and causes seams/flashes between scenes
    - a cross-fade floor (opacity never hits 0) + gentler parallax so fast snaps
      don't dip to a dark flash
-   - the footer is itself a snap target, so mandatory snap lets you rest on it
-     instead of bouncing back to the last scene
+   - the footer lives INSIDE the last scene (CTA + footer = one snap target);
+     that last scene uses 100dvh so it tracks the address bar and the footer
+     always hugs the true bottom (svh would end at the small-viewport mark and
+     leave a gap below when the bar hides = footer looks detached)
    - the work scene is shrunk to fit one screen so its link clears the rail */
 @media (max-width:760px){
   .scene{height:100svh}
@@ -834,4 +836,9 @@ html:has(body[data-bg="field"]){scroll-snap-type:y mandatory}
   .cwork__strip .cplate{aspect-ratio:1/1}
   .clink{margin-top:16px}
   .cine__rail{bottom:14px;left:16px}
+  /* last scene = CTA + footer, integral: track the dynamic viewport so the
+     footer sits at the real bottom even as the iOS address bar shows/hides */
+  .scene--cta{height:100dvh}
+  .scene--cta .ccta__h{margin-bottom:clamp(20px,5vw,32px)}
+  .scene--cta .foot{padding:20px clamp(20px,4vw,52px)}
 }
