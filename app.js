@@ -510,22 +510,72 @@
       if (railEl) railEl.classList.toggle("is-hidden", active === scenes.length - 1);
       requestAnimationFrame(frame);
     })();
-    /* MOBILE last-scene footer "scatto" fix. The last scene snaps with
-       scroll-snap-align:end (CSS, mobile) so its ONLY snap point is the document
-       bottom = footer fully shown (every mid-point ignored, as wanted). The bug
-       is that the iOS/Android address bar show/hide fires a 'resize' and, with
-       mandatory snap, the browser re-aligns that end point to the new viewport
-       = the jump. So we SUSPEND snap for the duration of any viewport resize and
-       restore it once the bar has settled — the toggle can no longer re-snap.
-       Mobile-only; desktop snap is never touched. */
-    let snapRestore;
-    addEventListener("resize", () => {
-      if (!matchMedia("(max-width:760px)").matches) return;
-      const root = document.documentElement;
-      root.style.scrollSnapType = "none";
-      clearTimeout(snapRestore);
-      snapRestore = setTimeout(() => { root.style.scrollSnapType = ""; }, 450);
+  }
+
+  /* ============ MOBILE pagination (replaces CSS scroll-snap on phones) ============
+     CSS scroll-snap + the iOS/Android dynamic address bar are incompatible for a
+     footer-bearing last scene: a bar show/hide resizes the viewport and the snap
+     engine re-aligns the scene = the "scatto". So on mobile we turn CSS snap OFF
+     (style.css mobile block) and drive the scroll ourselves: one swipe = one
+     scene, animated to a target computed from the LIVE viewport. The LAST scene
+     targets the document bottom (maxScroll) so the footer is always fully shown.
+     Programmatic scroll does not trigger the address-bar hide, so the viewport
+     stays put during the move = no conflict. Desktop keeps CSS snap, untouched. */
+  function initPaginate() {
+    const cine = document.getElementById("cine"); if (!cine) return;
+    const scenes = [...cine.querySelectorAll("[data-scene]")]; if (!scenes.length) return;
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return; // let it scroll normally
+    const isMobile = () => matchMedia("(max-width:760px)").matches;
+    const last = scenes.length - 1;
+    const maxScroll = () => (document.scrollingElement || document.documentElement).scrollHeight - innerHeight;
+    // live target: last scene bottom-aligns (footer fully shown), others top-align
+    const targetFor = i => Math.max(0, Math.min(i >= last ? maxScroll() : scenes[i].offsetTop, maxScroll()));
+    const currentIndex = () => {
+      const y = scrollY; let best = 0, bd = Infinity;
+      scenes.forEach((s, i) => { const d = Math.abs(targetFor(i) - y); if (d < bd) { bd = d; best = i; } });
+      return best;
+    };
+    let animating = false, raf = 0;
+    const easeOut = p => 1 - Math.pow(1 - p, 3);
+    function tween(to, dur) {
+      cancelAnimationFrame(raf);
+      const from = scrollY, dist = to - from, t0 = performance.now();
+      if (Math.abs(dist) < 2) return;
+      animating = true;
+      (function step(now) {
+        const p = Math.min(1, (now - t0) / dur);
+        scrollTo(0, from + dist * easeOut(p));
+        if (p < 1) raf = requestAnimationFrame(step);
+        else animating = false;
+      })(t0);
+    }
+    const go = i => tween(targetFor(Math.max(0, Math.min(last, i))), 560);
+    // ---- touch: lock native scroll, one scene per vertical swipe ----
+    let sy = 0, sx = 0;
+    const active = () => isMobile() && !document.body.classList.contains("nav-open");
+    addEventListener("touchstart", e => { sy = e.touches[0].clientY; sx = e.touches[0].clientX; }, { passive: true });
+    addEventListener("touchmove", e => {
+      if (!active()) return;
+      const dy = e.touches[0].clientY - sy, dx = e.touches[0].clientX - sx;
+      if (Math.abs(dy) > Math.abs(dx)) e.preventDefault(); // suppress native scroll (and the bar hide)
+    }, { passive: false });
+    addEventListener("touchend", e => {
+      if (!active() || animating) return;
+      const ey = (e.changedTouches[0] || {}).clientY;
+      if (ey == null) return;
+      const delta = sy - ey; // >0 = swipe up = next scene
+      if (Math.abs(delta) < 36) return; // tap / tiny move -> let clicks through
+      go(currentIndex() + (delta > 0 ? 1 : -1));
     }, { passive: true });
+    // ---- wheel (small-width trackpad/mouse) ----
+    let wlock = false;
+    addEventListener("wheel", e => {
+      if (!active()) return;
+      e.preventDefault();
+      if (animating || wlock || Math.abs(e.deltaY) < 8) return;
+      wlock = true; setTimeout(() => { wlock = false; }, 640);
+      go(currentIndex() + (e.deltaY > 0 ? 1 : -1));
+    }, { passive: false });
   }
 
   /* ============ intro / preloader — favicon mark, once per session ============ */
@@ -691,6 +741,7 @@
     initWizard();
     initReveals();
     initCine();
+    initPaginate();
     initHomeMotion();
 
     document.querySelectorAll("#year").forEach(y => y.textContent = new Date().getFullYear());

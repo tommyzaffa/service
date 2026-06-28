@@ -825,7 +825,12 @@ html:has(body[data-bg="field"]){scroll-snap-type:y mandatory}
      don't dip to a dark flash
    - the work scene is shrunk to fit one screen so its link clears the rail */
 @media (max-width:760px){
-  html:has(body[data-bg="field"]){scroll-snap-type:y mandatory}
+  /* MOBILE: CSS scroll-snap is OFF — JS pagination (app.js initPaginate) drives
+     the scroll instead. CSS snap + the dynamic address bar are incompatible for
+     the footer-bearing last scene (bar toggle resizes the viewport -> snap
+     re-aligns -> "scatto"). JS owns the scroll target (computed live), so the
+     bar can't interfere. Desktop keeps mandatory snap (rule above, untouched). */
+  html:has(body[data-bg="field"]){scroll-snap-type:none}
   .scene{height:100svh}
   .scene__pin{padding:84px clamp(20px,6vw,40px) 60px}
   .scene__c{max-height:none;
@@ -837,9 +842,4 @@ html:has(body[data-bg="field"]){scroll-snap-type:y mandatory}
   .cwork__strip .cplate{aspect-ratio:1/1}
   .clink{margin-top:16px}
   .cine__rail{bottom:14px;left:16px}
-  /* last scene: single snap point = its END (= document bottom, footer fully
-     shown). All mid-points between scene 5 and the footer are ignored. The
-     address-bar re-snap that this would otherwise cause is suppressed in JS
-     (initCine resize handler). Content stays centred (desktop cta layout). */
-  .scene--cta{scroll-snap-align:end}
 }
