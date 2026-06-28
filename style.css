@@ -825,10 +825,9 @@ html:has(body[data-bg="field"]){scroll-snap-type:y mandatory}
      don't dip to a dark flash
    - the work scene is shrunk to fit one screen so its link clears the rail */
 @media (max-width:760px){
-  /* MOBILE keeps CSS mandatory snap on sections 1-5; app.js initCine disables snap
-     (scrollSnapType="none") only while the LAST footer scene is active so a moving
-     address bar can't re-snap it (= the "scatto"). Desktop snap untouched. */
-  html:has(body[data-bg="field"]){scroll-snap-type:y mandatory}
+  /* MOBILE: snap-scroll fully disabled — free scroll, no scatto from the moving
+     address bar. Desktop keeps CSS mandatory snap (untouched). */
+  html:has(body[data-bg="field"]){scroll-snap-type:none}
   .scene{height:100svh}
   .scene__pin{padding:84px clamp(20px,6vw,40px) 60px}
   .scene__c{max-height:none;
