@@ -265,36 +265,37 @@
     const cols = ["#5FB3A6", "#2F7E72", "#A7D8CF", "#3E8C80"];
     const mode = document.body.dataset.bg || "field";
 
-    if (mode === "field") {                       /* HOME — drifting embers / sparks (like a campfire) */
-      const N = Math.round(Math.min(820, Math.max(340, W * H / (12000 * DPR))));
+    if (mode === "field") {                       /* HOME — rising embers, depth-sorted, no trails (campfire) */
+      const N = Math.round(Math.min(420, Math.max(170, W * H / (26000 * DPR))));
       const P = [];
       const spawn = (p, init) => {
+        p.z = Math.random();                                       // depth: 0 far .. 1 near
         p.x = Math.random() * W;
-        p.y = init ? Math.random() * H : H + Math.random() * 60 * DPR;   // rise up from below
-        p.vx = (Math.random() - .5) * .22 * DPR;
-        p.vy = -(.18 + Math.random() * .5) * DPR;
-        p.r = (.55 + Math.random() * 1.5) * DPR;
-        p.life = init ? Math.random() * 200 : 0; p.max = 240 + Math.random() * 380;
-        p.fr = .03 + Math.random() * .06; p.ph = Math.random() * 6.28; p.wob = Math.random() * 6.28;
+        p.y = init ? H * (.45 + Math.random() * .6) : H + Math.random() * 30 * DPR;  // bottom-weighted
+        p.vx = (Math.random() - .5) * .13 * DPR;
+        p.vy = -(.12 + p.z * .55) * DPR;                           // near embers rise faster (parallax)
+        p.r = (.4 + p.z * 1.5) * DPR;                              // near embers bigger
+        p.fr = .02 + Math.random() * .05; p.ph = Math.random() * 6.28; p.wob = Math.random() * 6.28;
         p.col = Math.random() < .14 ? "#FF8A5E" : cols[(Math.random() * cols.length) | 0];
       };
       for (let i = 0; i < N; i++) { const p = {}; spawn(p, true); P.push(p); }
+      P.sort((a, b) => a.z - b.z);                                 // far drawn first
       const R = 150 * DPR;
       (function frame() {
-        x.globalCompositeOperation = "source-over"; x.fillStyle = "rgba(12,14,15,.20)"; x.fillRect(0, 0, W, H);
+        x.globalCompositeOperation = "source-over"; x.fillStyle = "#0c0e0f"; x.fillRect(0, 0, W, H);  // full clear -> no lines
         x.globalCompositeOperation = "lighter";
         for (const p of P) {
-          p.wob += .024;
-          let vx = p.vx + Math.sin(p.wob) * .16 * DPR, vy = p.vy;
+          p.wob += .02; p.ph += p.fr;
+          let vx = p.vx + Math.sin(p.wob) * .1 * DPR * (.4 + p.z), vy = p.vy;
           const dx = p.x - mx, dy = p.y - my, d2 = dx * dx + dy * dy;
-          if (d2 < R * R) { const d = Math.sqrt(d2) || 1, f = (1 - d / R) * 1.3; vx += dx / d * f; vy += dy / d * f; }
-          p.x += vx; p.y += vy; p.life++;
-          const lk = Math.min(1, p.life / 36) * Math.max(0, 1 - p.life / p.max);
-          const flick = .5 + .5 * Math.sin(p.ph + p.life * p.fr);
-          x.globalAlpha = Math.max(0, lk * flick * .9);
+          if (d2 < R * R) { const d = Math.sqrt(d2) || 1, f = (1 - d / R) * 1.1 * p.z; vx += dx / d * f; vy += dy / d * f; }
+          p.x += vx; p.y += vy;
+          const vf = Math.pow(Math.max(0, Math.min(1, p.y / H)), 1.5);  // bright at bottom, fades upward
+          const flick = .65 + .35 * Math.sin(p.ph);
+          x.globalAlpha = vf * (.2 + p.z * .6) * flick;
           x.fillStyle = p.col;
           x.beginPath(); x.arc(p.x, p.y, p.r, 0, 7); x.fill();
-          if (p.life > p.max || p.y < -12 * DPR || p.x < -12 * DPR || p.x > W + 12 * DPR) spawn(p);
+          if (p.y < -14 * DPR || p.x < -20 * DPR || p.x > W + 20 * DPR) spawn(p);
         }
         x.globalAlpha = 1; requestAnimationFrame(frame);
       })();
@@ -461,21 +462,41 @@
     const curEl = document.getElementById("sceneCur"),
           nameEl = document.getElementById("sceneName"),
           progEl = document.getElementById("cineProg"),
-          totEl = document.getElementById("sceneTot");
+          totEl = document.getElementById("sceneTot"),
+          railEl = document.getElementById("cineRail"),
+          glowEl = document.getElementById("sceneGlow");
     if (totEl) totEl.textContent = String(scenes.length).padStart(2, "0");
     const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+    /* one glow per scene (x%,y% position + rgb,a colour) — matches the old sb-1..6 tints.
+       initCine blends these by visibility so the single #sceneGlow travels+recolours
+       continuously across sections (the next scene's light is anticipated, no cut). */
+    const GLOWS = [
+      { x: 50, y: 14, r: 95,  g: 179, b: 166, a: .20 },  // intro
+      { x: 20, y: 32, r: 95,  g: 179, b: 166, a: .22 },  // manifesto
+      { x: 80, y: 50, r: 47,  g: 126, b: 114, a: .24 },  // servizi
+      { x: 30, y: 74, r: 95,  g: 179, b: 166, a: .20 },  // studio
+      { x: 50, y: 58, r: 116, g: 196, b: 183, a: .20 },  // lavori
+      { x: 50, y: 48, r: 95,  g: 179, b: 166, a: .26 },  // cta
+    ];
     let activeIdx = -1;
     (function frame() {
       const vh = innerHeight; let active = 0, best = Infinity;
+      let gx = 0, gy = 0, gr = 0, gg = 0, gb = 0, ga = 0, gw = 0;
       scenes.forEach((s, idx) => {
         const r = s.getBoundingClientRect();
         const off = (r.top + r.height / 2 - vh / 2) / vh;   // 0 = centred, ±1 = a screen away
-        const vis = clamp(1 - Math.abs(off) * 1.3, 0, 1);
+        const vis = clamp(1 - Math.abs(off) * 0.92, 0, 1);   // gentler falloff -> adjacent scenes overlap longer = softer crossfade
         s.style.setProperty("--off", off.toFixed(3));
         s.style.setProperty("--vis", vis.toFixed(3));
+        const G = GLOWS[idx] || GLOWS[0], w = vis * vis;     // square -> centred scene dominates, neighbour blends in
+        gw += w; gx += G.x * w; gy += G.y * w; gr += G.r * w; gg += G.g * w; gb += G.b * w; ga += G.a * w;
         const d = Math.abs(off);
         if (d < best) { best = d; active = idx; }
       });
+      if (glowEl && gw > 0) {
+        gx /= gw; gy /= gw; gr /= gw; gg /= gw; gb /= gw; ga /= gw;
+        glowEl.style.background = `radial-gradient(95% 80% at ${gx.toFixed(1)}% ${gy.toFixed(1)}%,rgba(${gr | 0},${gg | 0},${gb | 0},${ga.toFixed(3)}),transparent 63%)`;
+      }
       if (active !== activeIdx) {
         activeIdx = active;
         scenes.forEach((s, idx) => s.classList.toggle("is-active", idx === active));
@@ -486,6 +507,7 @@
         const max = document.documentElement.scrollHeight - vh;
         progEl.style.width = (clamp(scrollY / Math.max(1, max), 0, 1) * 100).toFixed(1) + "%";
       }
+      if (railEl) railEl.classList.toggle("is-hidden", active === scenes.length - 1);
       requestAnimationFrame(frame);
     })();
   }

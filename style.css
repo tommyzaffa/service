@@ -605,14 +605,22 @@ a.cinfo__row:hover .cinfo__value{color:var(--pink)}
 html:has(body[data-bg="field"]){scroll-snap-type:y mandatory}
 .cine{position:relative;z-index:3}
 .scene{position:relative;height:100vh;scroll-snap-align:start;scroll-snap-stop:always}
-/* last scene releases so you can keep scrolling onto the footer (a snap target) */
-.scene--cta{scroll-snap-stop:normal}
-html:has(body[data-bg="field"]) .foot{scroll-snap-align:end}
+/* last scene holds the footer: the final screen = CTA + footer in ONE snap target
+   (keeps mandatory snap intact while still making the footer reachable) */
+.scene--cta .scene__pin{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-bottom:0}
+.scene--cta .scene__c{flex:1;display:flex;flex-direction:column;justify-content:center;max-height:none}
+.scene--cta .foot{width:100%;pointer-events:auto}
 .scene__pin{position:relative;height:100%;display:grid;place-items:center;
   overflow:hidden;pointer-events:none;padding:14vh clamp(22px,6vw,90px)}
 /* per-scene decorative tint, fades with the scene */
+/* ONE continuous light for the whole stage: initCine blends its position+colour
+   across scenes by visibility weight, so the glow glides between sections
+   (you already see the next scene's light) instead of fading out = a cut.
+   The per-scene .scene__bg tints below are now only the reduced-motion fallback. */
+.scene-glow{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(95% 80% at 50% 42%,rgba(95,179,166,.2),transparent 63%)}
 .scene__bg{position:absolute;inset:0;opacity:calc(var(--vis,0)*.9);pointer-events:none;
-  transition:opacity .1s linear}
+  display:none;transition:opacity .55s var(--ease)}
 .sb-1{background:radial-gradient(120% 90% at 50% 8%,rgba(95,179,166,.16),transparent 60%)}
 .sb-2{background:radial-gradient(90% 80% at 18% 30%,rgba(95,179,166,.18),transparent 62%)}
 .sb-3{background:radial-gradient(80% 90% at 82% 50%,rgba(47,126,114,.20),transparent 60%)}
@@ -622,18 +630,14 @@ html:has(body[data-bg="field"]) .foot{scroll-snap-align:end}
 /* scene content — opacity + parallax lift driven by how centred the scene is
    (--off: 0 centred, +below / -above ; --vis: 1 centred -> 0 a screen away) */
 .scene__c{position:relative;width:min(1180px,92vw);max-height:84vh;
-  opacity:calc(.4 + var(--vis,0)*.6);
-  transform:translateY(calc(var(--off,0)*60px)) scale(calc(.965 + var(--vis,0)*.035));
-  pointer-events:none;will-change:transform,opacity}
+  opacity:calc(.46 + var(--vis,0)*.54);
+  transform:translateY(calc(var(--off,0)*42px)) scale(calc(.978 + var(--vis,0)*.022));
+  pointer-events:none;will-change:transform,opacity;
+  /* ease the scroll-driven values so the fast mandatory snap glides instead of cutting */
+  transition:opacity .5s var(--ease),transform .5s var(--ease)}
 .scene.is-active .scene__c{pointer-events:auto}
 .scene__kick{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.34em;
   text-transform:uppercase;color:var(--pink);margin-bottom:clamp(18px,2.4vw,30px)}
-/* scroll cue */
-.scene__cue{margin-top:48px;width:1px;height:56px;background:linear-gradient(var(--pink),transparent);
-  position:relative;overflow:hidden;opacity:.8}
-.scene__cue span{position:absolute;top:-56px;left:0;width:1px;height:56px;background:var(--pink);
-  animation:cueRun 2.2s var(--ease) infinite}
-@keyframes cueRun{0%{transform:translateY(0)}100%{transform:translateY(112px)}}
 
 /* intro scene — fully centred hero */
 .scene--intro .scene__c{text-align:center}
@@ -757,7 +761,10 @@ html:has(body[data-bg="field"]) .foot{scroll-snap-align:end}
 /* fixed scene index / progress rail */
 .cine__rail{position:fixed;left:clamp(18px,4vw,52px);bottom:clamp(20px,4vw,42px);z-index:65;
   display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;letter-spacing:.16em;
-  color:var(--muted);pointer-events:none;mix-blend-mode:difference}
+  color:var(--muted);pointer-events:none;mix-blend-mode:difference;
+  transition:opacity .35s var(--ease),transform .35s var(--ease)}
+/* hide the index/progress rail while the footer is in view */
+.cine__rail.is-hidden{opacity:0;transform:translateY(10px)}
 .cine__cur{color:var(--ink);font-size:15px}
 .cine__sep{opacity:.5}
 .cine__name{margin-left:8px;text-transform:uppercase;letter-spacing:.22em;font-size:10px}
@@ -771,9 +778,9 @@ html:has(body[data-bg="field"]) .foot{scroll-snap-align:end}
   .scene{height:auto;scroll-snap-align:none}
   .scene__pin{position:static;height:auto;min-height:60vh;padding-top:14vh;padding-bottom:14vh}
   .scene__c{opacity:1;transform:none;pointer-events:auto}
-  .scene__bg{opacity:.5}
+  .scene-glow{display:none}
+  .scene__bg{display:block;opacity:.5}
   .clist__row,.cstudio__meta div,.cplate{opacity:1;transform:none}
-  .scene__cue{display:none}
   .cine__rail{display:none}
 }
 
@@ -819,9 +826,9 @@ html:has(body[data-bg="field"]) .foot{scroll-snap-align:end}
   .scene{height:100svh}
   .scene__pin{padding:84px clamp(20px,6vw,40px) 60px}
   .scene__c{max-height:none;
-    opacity:calc(.35 + var(--vis,0)*.65);
-    transform:translateY(calc(var(--off,0)*26px)) scale(calc(.99 + var(--vis,0)*.01))}
-  .scene__bg{opacity:calc(.25 + var(--vis,0)*.65)}
+    opacity:calc(.42 + var(--vis,0)*.58);
+    transform:translateY(calc(var(--off,0)*22px)) scale(calc(.99 + var(--vis,0)*.01))}
+  .scene__bg{opacity:calc(.3 + var(--vis,0)*.7)}
   .scene--work .cwork__h{font-size:clamp(1.8rem,7vw,2.4rem);margin-bottom:14px}
   .cwork__strip{gap:10px}
   .cwork__strip .cplate{aspect-ratio:1/1}

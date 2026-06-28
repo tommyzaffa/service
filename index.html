@@ -24,6 +24,7 @@
 </head>
 <body data-bg="field">
 <canvas id="aurora"></canvas>
+<div class="scene-glow" id="sceneGlow"></div>
 <div class="veil"></div>
 <div id="cursor"></div>
 <div id="cursorDot"></div>
@@ -93,7 +94,6 @@
             <span class="cgal__ph" style="--i:2;background-image:linear-gradient(120deg,#15201d,#3d8072,#74c4b7)"></span>
             <span class="cgal__ph" style="--i:3;background-image:linear-gradient(150deg,#101817,#2b5a51,#5fb3a6)"></span>
           </div>
-          <div class="scene__cue"><span></span></div>
         </div>
       </div>
     </section>
@@ -181,16 +181,15 @@
           <h2 class="ccta__h"><span data-i18n="cc.cta.1">Iniziamo</span> <span data-i18n-html="cc.cta.2"></span></h2>
           <a class="ccta__btn" href="start.html" data-hot><span data-i18n="cc.cta.btn">Costruisci il progetto →</span></a>
         </div>
+        <footer class="foot">
+          <span>© <span id="year"></span> Atto Studio</span>
+          <span>Lugano · Zürich</span>
+          <span>hello@atto.studio</span>
+        </footer>
       </div>
     </section>
 
   </main>
-
-  <footer class="foot">
-    <span>© <span id="year"></span> Atto Studio</span>
-    <span>Lugano · Zürich</span>
-    <span>hello@atto.studio</span>
-  </footer>
 </div>
 
 <script src="js/data.js"></script>
