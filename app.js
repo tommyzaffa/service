@@ -502,11 +502,13 @@
         scenes.forEach((s, idx) => s.classList.toggle("is-active", idx === active));
         if (curEl) curEl.textContent = String(active + 1).padStart(2, "0");
         if (nameEl) nameEl.textContent = scenes[active].dataset.name || "";
-        // MOBILE only: disable CSS snap while the LAST (footer) scene is active so a
-        // moving address bar can't re-snap it (= the "scatto"); "" restores the CSS
-        // mandatory snap on every other scene / on desktop. Desktop untouched.
+        // MOBILE only: disable CSS snap across the LAST TWO scenes (sezione 5 + the
+        // footer scene) so a moving address bar can't yank you back to the footer
+        // (= the "scatto"). In that zone initSettle() animates a fluid settle to the
+        // nearest section on scroll-rest. "" restores CSS mandatory snap on sections
+        // 1-4 / on desktop. Desktop untouched.
         document.documentElement.style.scrollSnapType =
-          (active === scenes.length - 1 && matchMedia("(max-width:760px)").matches)
+          (active >= scenes.length - 2 && matchMedia("(max-width:760px)").matches)
             ? "none" : "";
       }
       if (progEl) {
@@ -516,6 +518,57 @@
       if (railEl) railEl.classList.toggle("is-hidden", active === scenes.length - 1);
       requestAnimationFrame(frame);
     })();
+  }
+
+  /* ============ MOBILE: fluid settle in the last-section zone ============
+     CSS mandatory snap drives sections 1-4. For the last two sections (sezione 5
+     + the footer scene) initCine turns CSS snap OFF (so a moving address bar can't
+     yank you back to the footer = the old "scatto"). Without snap there a slow
+     upward flick would just drift; so when the scroll comes to REST in that zone we
+     animate (easeOut) to the NEAREST of the two sections — fluid, no snap-back.
+     Programmatic scroll doesn't hide the address bar, so the settle stays smooth.
+     Mobile only (guarded by the snap-off flag set on mobile); desktop untouched. */
+  function initSettle() {
+    const cine = document.getElementById("cine"); if (!cine) return;
+    const scenes = [...cine.querySelectorAll("[data-scene]")]; if (!scenes.length) return;
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const last = scenes.length - 1;
+    const maxScroll = () => (document.scrollingElement || document.documentElement).scrollHeight - innerHeight;
+    // last section bottom-aligns (footer fully shown) so it tracks the live viewport
+    const targetFor = i => Math.max(0, Math.min(i >= last ? maxScroll() : scenes[i].offsetTop, maxScroll()));
+    const snapOff = () => document.documentElement.style.scrollSnapType === "none"; // set by initCine in the last-two zone (mobile)
+    let raf = 0, settling = false;
+    const easeOut = p => 1 - Math.pow(1 - p, 3);
+    function tween(to) {
+      cancelAnimationFrame(raf);
+      const from = scrollY, dist = to - from;
+      if (Math.abs(dist) < 2) { settling = false; return; }
+      const dur = Math.min(620, Math.max(280, Math.abs(dist) * 0.7)), t0 = performance.now();
+      settling = true;
+      (function step(now) {
+        const p = Math.min(1, (now - t0) / dur);
+        scrollTo(0, from + dist * easeOut(p));
+        if (p < 1) raf = requestAnimationFrame(step); else settling = false;
+      })(t0);
+    }
+    function settle() {
+      if (settling || !snapOff() || document.body.classList.contains("nav-open")) return;
+      const y = scrollY;
+      let best = last, bd = Infinity;
+      for (let i = last - 1; i <= last; i++) {        // nearest of sezione 5 / ultima
+        const d = Math.abs(targetFor(i) - y);
+        if (d < bd) { bd = d; best = i; }
+      }
+      tween(targetFor(best));
+    }
+    let timer = 0;
+    addEventListener("scroll", () => {
+      if (settling) return;                            // ignore our own tween's scroll events
+      clearTimeout(timer);
+      timer = setTimeout(settle, 110);                 // fire shortly after the scroll rests
+    }, { passive: true });
+    // a new touch cancels an in-flight settle so the user always wins
+    addEventListener("touchstart", () => { if (settling) { cancelAnimationFrame(raf); settling = false; } }, { passive: true });
   }
 
   /* ============ intro / preloader — favicon mark, once per session ============ */
