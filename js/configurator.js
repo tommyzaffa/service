@@ -16,10 +16,28 @@
     base:     () => document.getElementById("quoteBase"),
     addons:   () => document.getElementById("quoteAddons"),
     services: () => document.getElementById("quoteServices"),
+    servicesBlock: () => document.getElementById("quoteServicesBlock"),
     rows:     () => document.getElementById("summaryRows"),
     total:    () => document.getElementById("summaryTotal"),
     formSummary: () => document.getElementById("formSummary")
   };
+
+  /* Extra & recurring services only make sense for web work:
+     show the block when the base package is a Website/E-commerce
+     or when the "Web +" add-on has been added. */
+  function servicesApply() {
+    const pkg = D.getPackage(state.selectedPackage);
+    const webPackage = pkg && pkg.sector === "web";
+    return webPackage || state.addons.has("web_plus");
+  }
+  function updateServicesVisibility() {
+    const block = el.servicesBlock();
+    if (!block) return;
+    const show = servicesApply();
+    block.classList.toggle("hidden", !show);
+    // Drop any selected services that no longer apply, so the total stays correct.
+    if (!show && state.services.size) { state.services.clear(); }
+  }
 
   function unitLabel(unit) {
     if (unit === "month") return t("quote.month");
@@ -82,7 +100,7 @@
       row.querySelector(".opt-toggle").addEventListener("click", () => {
         const id = row.dataset.addon;
         if (state.addons.has(id)) state.addons.delete(id); else state.addons.add(id);
-        renderAddons(); updateSummary(true);
+        renderAddons(); updateServicesVisibility(); renderServices(); updateSummary(true);
       });
     });
     app.renderIcons();
@@ -188,7 +206,7 @@
     }
     el.empty().classList.add("hidden");
     el.layout().classList.remove("hidden");
-    renderBase(); renderAddons(); renderServices(); updateSummary(true);
+    renderBase(); renderAddons(); updateServicesVisibility(); renderServices(); updateSummary(true);
   }
 
   /* ---- Currency switch ----------------------------------- */

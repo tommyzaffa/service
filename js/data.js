@@ -16,17 +16,17 @@ const CURRENCIES = {
 /* ---- Sectors ---------------------------------------------- */
 /* color = brand accent for the sector (see brief §7.3)        */
 const SECTORS = {
-  branding:        { id: "branding",        color: "#2E8B6E", icon: "pen-tool" },
-  web:             { id: "web",             color: "#1FA2A6", icon: "monitor" },
-  social:          { id: "social",          color: "#3B6FE0", icon: "share-2" },
-  video_events:    { id: "video_events",    color: "#E8487E", icon: "video" },
-  video_fashion:   { id: "video_fashion",   color: "#E8487E", icon: "film" },
-  video_corporate: { id: "video_corporate", color: "#E8487E", icon: "briefcase" },
-  video_commercial:{ id: "video_commercial",color: "#E8487E", icon: "megaphone" },
-  podcast:         { id: "podcast",         color: "#E0453B", icon: "mic" },
-  personal:        { id: "personal",        color: "#F2922E", icon: "user" },
-  sport:           { id: "sport",           color: "#F2792E", icon: "trophy" },
-  artist:          { id: "artist",          color: "#F2A63E", icon: "music" }
+  branding:        { id: "branding",        color: "#5E7A52", icon: "pen-tool" },
+  web:             { id: "web",             color: "#2E6E6E", icon: "monitor" },
+  social:          { id: "social",          color: "#3A5A8C", icon: "share-2" },
+  video_events:    { id: "video_events",    color: "#9C3B5C", icon: "video" },
+  video_fashion:   { id: "video_fashion",   color: "#9C3B5C", icon: "film" },
+  video_corporate: { id: "video_corporate", color: "#9C3B5C", icon: "briefcase" },
+  video_commercial:{ id: "video_commercial",color: "#9C3B5C", icon: "megaphone" },
+  podcast:         { id: "podcast",         color: "#A8453B", icon: "mic" },
+  personal:        { id: "personal",        color: "#B0742E", icon: "user" },
+  sport:           { id: "sport",           color: "#99602C", icon: "trophy" },
+  artist:          { id: "artist",          color: "#8A6A3E", icon: "music" }
 };
 
 /* ---- Packages --------------------------------------------- */
@@ -158,13 +158,14 @@ const SERVICES = [
 
 /* ---- Team (brief §9) -------------------------------------- */
 const TEAM = [
-  { id: "macchi",       initials: "DM" },
-  { id: "cirrincione",  initials: "DC" },
-  { id: "benedetti",    initials: "FB" },
-  { id: "zaffalon",     initials: "TZ" },
-  { id: "agueci",       initials: "MA" },
-  { id: "martina",      initials: "M" }
+  { id: "macchi",       initials: "DM", sector: "branding", work: ["branding", "video_corporate", "web", "podcast"] },
+  { id: "cirrincione",  initials: "DC", sector: "web",      work: ["web", "video_commercial", "social", "artist"] },
+  { id: "benedetti",    initials: "FB", sector: "social",   work: ["social", "video_fashion", "personal", "podcast"] },
+  { id: "zaffalon",     initials: "TZ", sector: "web",      work: ["web", "branding", "video_events", "social"] },
+  { id: "agueci",       initials: "MA", sector: "branding", work: ["branding", "social", "personal", "web"] }
 ];
+
+function getMember(id) { return TEAM.find(m => m.id === id) || null; }
 
 /* ---- Helpers ---------------------------------------------- */
 function formatPrice(amountCHF, currencyCode) {
@@ -194,5 +195,5 @@ function getService(serviceId) {
 window.ATTO_DATA = {
   CURRENCIES, SECTORS, PACKAGES, CATEGORIES, MATRIX,
   ADDONS, SERVICES, TEAM,
-  formatPrice, getPackage, getAddon, getService
+  formatPrice, getPackage, getAddon, getService, getMember
 };

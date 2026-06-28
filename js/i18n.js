@@ -25,6 +25,20 @@ const I18N = {
     "hero.secondary": "See our work",
     "hero.scroll": "Scroll",
 
+    "home.contents": "Contents",
+    "home.statement": "We don't sell pieces. We build the whole picture — one studio for branding, web, social and film.",
+    "home.services.kicker": "What we do",
+    "home.services.title": "Everything under one roof.",
+    "home.services.lead": "Pick a single service or the full stack. Either way it's one team, one standard, one point of contact.",
+    "home.services.cta": "Build your quote",
+    "home.studio.kicker": "The studio",
+    "home.studio.title": "Young, sharp, and serious about the craft.",
+    "home.studio.cta": "Meet the team",
+    "home.cta.kicker": "Ready when you are",
+    "home.cta.title": "Let's build something worth showing.",
+    "home.cta.lead": "Answer three quick questions and get a tailored estimate — or just say hello.",
+    "home.cta.secondary": "Just say hello",
+
     "flow.title": "Build your quote",
     "flow.subtitle": "Three quick questions. Tailored packages. An instant estimate.",
     "flow.step": "Step",
@@ -38,7 +52,7 @@ const I18N = {
     "flow.q2.title": "What kind?",
     "flow.q2.hint": "This helps us tailor the right packages.",
     "flow.q3.title": "What do you need?",
-    "flow.q3.hint": "Select one or more areas. You can combine them.",
+    "flow.q3.hint": "Pick the one area you need most.",
 
     "flow.result.title": "Recommended packages",
     "flow.result.subtitle": "Based on your profile. Pick one to configure your quote.",
@@ -160,6 +174,10 @@ const I18N = {
     "about.role.zaffalon": "Web / Tech Lead",
     "about.role.agueci": "Design Lead",
     "about.role.martina": "Branding / Identity",
+    "member.view": "View portfolio",
+    "member.back": "Back to team",
+    "member.intro": "A look at selected projects, collaborations and experiments.",
+    "member.work.kicker": "Selected work",
 
     "work.kicker": "Selected work",
     "work.title": "Proof, not promises.",
@@ -197,6 +215,20 @@ const I18N = {
     "hero.secondary": "Guarda i lavori",
     "hero.scroll": "Scorri",
 
+    "home.contents": "Indice",
+    "home.statement": "Non vendiamo pezzi. Costruiamo l'immagine intera — un solo studio per branding, web, social e video.",
+    "home.services.kicker": "Cosa facciamo",
+    "home.services.title": "Tutto sotto lo stesso tetto.",
+    "home.services.lead": "Scegli un singolo servizio o il pacchetto completo. In ogni caso è un solo team, uno standard, un unico referente.",
+    "home.services.cta": "Costruisci il preventivo",
+    "home.studio.kicker": "Lo studio",
+    "home.studio.title": "Giovani, svegli e seri sul mestiere.",
+    "home.studio.cta": "Conosci il team",
+    "home.cta.kicker": "Quando vuoi",
+    "home.cta.title": "Costruiamo qualcosa che valga la pena mostrare.",
+    "home.cta.lead": "Rispondi a tre domande veloci e ottieni una stima su misura — oppure salutaci e basta.",
+    "home.cta.secondary": "Salutaci e basta",
+
     "flow.title": "Costruisci il tuo preventivo",
     "flow.subtitle": "Tre domande veloci. Pacchetti su misura. Una stima immediata.",
     "flow.step": "Step",
@@ -210,7 +242,7 @@ const I18N = {
     "flow.q2.title": "Che tipo sei?",
     "flow.q2.hint": "Ci aiuta a proporti i pacchetti giusti.",
     "flow.q3.title": "Di cosa hai bisogno?",
-    "flow.q3.hint": "Seleziona una o più aree. Puoi combinarle.",
+    "flow.q3.hint": "Scegli l'area che ti serve di più.",
 
     "flow.result.title": "Pacchetti consigliati",
     "flow.result.subtitle": "In base al tuo profilo. Scegline uno per configurare il preventivo.",
@@ -332,6 +364,10 @@ const I18N = {
     "about.role.zaffalon": "Referente Web / Tech",
     "about.role.agueci": "Referente Grafica",
     "about.role.martina": "Branding / Identità",
+    "member.view": "Vedi portfolio",
+    "member.back": "Torna al team",
+    "member.intro": "Una selezione di progetti, collaborazioni ed esperimenti.",
+    "member.work.kicker": "Lavori selezionati",
 
     "work.kicker": "Lavori selezionati",
     "work.title": "Fatti, non promesse.",
@@ -369,6 +405,20 @@ const I18N = {
     "hero.secondary": "Arbeiten ansehen",
     "hero.scroll": "Scrollen",
 
+    "home.contents": "Inhalt",
+    "home.statement": "Wir verkaufen keine Einzelteile. Wir bauen das ganze Bild — ein Studio für Branding, Web, Social und Film.",
+    "home.services.kicker": "Was wir tun",
+    "home.services.title": "Alles unter einem Dach.",
+    "home.services.lead": "Wähle eine einzelne Leistung oder das volle Paket. So oder so: ein Team, ein Standard, ein Ansprechpartner.",
+    "home.services.cta": "Angebot erstellen",
+    "home.studio.kicker": "Das Studio",
+    "home.studio.title": "Jung, smart und ernsthaft beim Handwerk.",
+    "home.studio.cta": "Team kennenlernen",
+    "home.cta.kicker": "Wann immer du willst",
+    "home.cta.title": "Bauen wir etwas Vorzeigbares.",
+    "home.cta.lead": "Beantworte drei kurze Fragen und erhalte eine massgeschneiderte Schätzung — oder sag einfach Hallo.",
+    "home.cta.secondary": "Einfach Hallo sagen",
+
     "flow.title": "Erstelle dein Angebot",
     "flow.subtitle": "Drei kurze Fragen. Passende Pakete. Eine sofortige Schätzung.",
     "flow.step": "Schritt",
@@ -382,7 +432,7 @@ const I18N = {
     "flow.q2.title": "Welcher Typ?",
     "flow.q2.hint": "So finden wir die richtigen Pakete.",
     "flow.q3.title": "Was brauchst du?",
-    "flow.q3.hint": "Wähle einen oder mehrere Bereiche. Kombinierbar.",
+    "flow.q3.hint": "Wähle den Bereich, den du am meisten brauchst.",
 
     "flow.result.title": "Empfohlene Pakete",
     "flow.result.subtitle": "Basierend auf deinem Profil. Wähle eins zum Konfigurieren.",
@@ -504,6 +554,10 @@ const I18N = {
     "about.role.zaffalon": "Web- / Tech-Verantwortlicher",
     "about.role.agueci": "Design-Verantwortlicher",
     "about.role.martina": "Branding / Identität",
+    "member.view": "Portfolio ansehen",
+    "member.back": "Zurück zum Team",
+    "member.intro": "Eine Auswahl an Projekten, Kooperationen und Experimenten.",
+    "member.work.kicker": "Ausgewählte Arbeiten",
 
     "work.kicker": "Ausgewählte Arbeiten",
     "work.title": "Belege, keine Versprechen.",
@@ -541,6 +595,20 @@ const I18N = {
     "hero.secondary": "Voir les réalisations",
     "hero.scroll": "Défiler",
 
+    "home.contents": "Sommaire",
+    "home.statement": "Nous ne vendons pas des morceaux. Nous construisons l'image entière — un studio pour le branding, le web, le social et la vidéo.",
+    "home.services.kicker": "Ce que nous faisons",
+    "home.services.title": "Tout sous un même toit.",
+    "home.services.lead": "Choisissez un seul service ou la totale. Dans tous les cas : une équipe, un standard, un interlocuteur.",
+    "home.services.cta": "Construire le devis",
+    "home.studio.kicker": "Le studio",
+    "home.studio.title": "Jeunes, affûtés et sérieux dans le métier.",
+    "home.studio.cta": "Rencontrer l'équipe",
+    "home.cta.kicker": "Quand vous voulez",
+    "home.cta.title": "Construisons quelque chose à montrer.",
+    "home.cta.lead": "Répondez à trois questions rapides et obtenez une estimation sur mesure — ou dites simplement bonjour.",
+    "home.cta.secondary": "Dire bonjour",
+
     "flow.title": "Construisez votre devis",
     "flow.subtitle": "Trois questions rapides. Des forfaits sur mesure. Une estimation immédiate.",
     "flow.step": "Étape",
@@ -554,7 +622,7 @@ const I18N = {
     "flow.q2.title": "Quel profil ?",
     "flow.q2.hint": "Cela nous aide à proposer les bons forfaits.",
     "flow.q3.title": "De quoi avez-vous besoin ?",
-    "flow.q3.hint": "Sélectionnez un ou plusieurs domaines. Combinables.",
+    "flow.q3.hint": "Choisissez le domaine dont vous avez le plus besoin.",
 
     "flow.result.title": "Forfaits recommandés",
     "flow.result.subtitle": "Selon votre profil. Choisissez-en un pour configurer votre devis.",
@@ -676,6 +744,10 @@ const I18N = {
     "about.role.zaffalon": "Référent Web / Tech",
     "about.role.agueci": "Référent Design",
     "about.role.martina": "Branding / Identité",
+    "member.view": "Voir le portfolio",
+    "member.back": "Retour à l'équipe",
+    "member.intro": "Une sélection de projets, collaborations et expérimentations.",
+    "member.work.kicker": "Travaux sélectionnés",
 
     "work.kicker": "Réalisations choisies",
     "work.title": "Des preuves, pas des promesses.",
@@ -818,6 +890,111 @@ const PKG_DESC = {
 PKG_DESC.de = PKG_DESC.en;
 PKG_DESC.fr = PKG_DESC.en;
 
+/* ---- Package feature bullets (short, tier-differentiating) -- */
+/* EN + IT authored; DE/FR fall back to EN. Grounded in /docs. */
+const PKG_FEATURES = {
+  en: {
+    brand_start: ["Logo + motion graphic", "Palette & fonts", "Starter social templates"],
+    brand_pro: ["Everything in START", "Brand manual", "Brand strategy"],
+    brand_premium: ["Full visual identity", "Brand guidelines & applications", "Strategy for larger teams"],
+    rebranding: ["Logo restyle", "New visual identity", "Communication review"],
+    rebranding_pro: ["Full restyle + motion", "Templates & palette", "Brand manual + strategy"],
+    website_start: ["One-page site", "Mobile responsive", "Contact form"],
+    website_pro: ["Multi-page site", "Basic SEO", "Blog & analytics"],
+    website_premium: ["Advanced corporate site", "SEO + funnel", "Newsletter & automations"],
+    ecom_start: ["Product catalogue", "Checkout", "Product descriptions"],
+    ecom_growth: ["Everything in START", "Product media + ads", "Email & retargeting"],
+    landing_campaign: ["Sales landing page", "Form + tracking", "Copy & graphics"],
+    social_start: ["One channel managed", "Shooting + editing", "Editorial plan & reels"],
+    social_pro: ["Everything in START", "Monthly report", "Graphic design"],
+    social_premium: ["Full management", "Ads + strategy", "Reports & community"],
+    linkedin_biz: ["LinkedIn posts", "Short articles", "Positioning"],
+    vid_ev_start: ["1-person crew", "Pro editing", "Color & audio"],
+    vid_ev_pro: ["2-person crew", "Multicam coverage", "Aftermovie + teaser"],
+    vid_ev_premium: ["3–4 person crew", "Cinematic lighting", "VFX & motion graphics"],
+    vid_ev_luxury: ["3–5 person crew", "Full production design", "Drone + premium post"],
+    vid_fa_start: ["1-person crew", "Pro editing", "Color correction"],
+    vid_fa_pro: ["2-person crew", "Cinematic lighting", "Color grading"],
+    vid_fa_premium: ["3–4 person crew", "Sound design", "VFX & titles"],
+    vid_fa_luxury: ["3–5 person crew", "Production design", "Drone + premium post"],
+    vid_fa_social: ["Social cutdowns", "Vertical reels", "Teasers & backstage"],
+    vid_co_start: ["1-person crew", "Pro editing", "Color & audio"],
+    vid_co_pro: ["2-person crew", "Cinematic lighting", "Color grading"],
+    vid_co_premium: ["3–4 person crew", "Sound design", "VFX & titles"],
+    vid_co_luxury: ["3–5 person crew", "Production design", "Drone + premium post"],
+    vid_co_social: ["Social cutdowns", "Vertical reels", "Teasers & backstage"],
+    vid_cm_start: ["1-person crew", "Pro editing", "Color & audio"],
+    vid_cm_pro: ["2-person crew", "Cinematic lighting", "Color grading"],
+    vid_cm_premium: ["3–4 person crew", "Sound design", "VFX & titles"],
+    vid_cm_luxury: ["3–5 person crew", "Production design", "Drone + premium post"],
+    vid_cm_social: ["Social cutdowns", "Vertical reels", "Teasers & backstage"],
+    pod_start: ["2 cameras, 1 host", "Audio/video recording", "Simple edit + publishing"],
+    pod_pro: ["3 cameras, 2 hosts", "Base graphics", "Social clips + distribution"],
+    pod_premium: ["4 cameras, 3 hosts + LIVE", "Direction & graphics", "Clips + editorial strategy"],
+    pers_start: ["Starter brand kit", "Profile setup", "Content direction"],
+    pers_premium: ["Image & content", "Positioning", "Ongoing direction"],
+    pers_professional: ["Executive positioning", "LinkedIn presence", "Professional content"],
+    pers_political: ["Campaign identity", "Public messaging", "Content & coverage"],
+    sport_start: ["Starter athlete kit", "Profile setup", "Content direction"],
+    sport_premium: ["Image & content", "Positioning", "Ongoing direction"],
+    sport_team: ["Team identity", "Squad content", "Matchday coverage"],
+    artist_start: ["Starter artist kit", "Profile setup", "Content direction"],
+    artist_premium: ["Image & content", "Positioning", "Ongoing direction"],
+    artist_team: ["Band identity", "Collective content", "Release coverage"]
+  },
+  it: {
+    brand_start: ["Logo + motion graphic", "Palette e font", "Template social iniziali"],
+    brand_pro: ["Tutto di START", "Manuale brand", "Strategia di brand"],
+    brand_premium: ["Visual identity completa", "Brand guidelines e applicazioni", "Strategia per team grandi"],
+    rebranding: ["Restyling logo", "Nuova identità visiva", "Revisione comunicazione"],
+    rebranding_pro: ["Restyling completo + motion", "Template e palette", "Manuale brand + strategia"],
+    website_start: ["Sito one-page", "Responsive mobile", "Form contatti"],
+    website_pro: ["Sito multipagina", "SEO base", "Blog e analytics"],
+    website_premium: ["Sito aziendale avanzato", "SEO + funnel", "Newsletter e automazioni"],
+    ecom_start: ["Catalogo prodotti", "Checkout", "Descrizioni prodotto"],
+    ecom_growth: ["Tutto di START", "Foto/video prodotto + ads", "Email e retargeting"],
+    landing_campaign: ["Landing di vendita", "Form + tracking", "Copy e grafiche"],
+    social_start: ["Un canale gestito", "Shooting + editing", "Piano editoriale e reel"],
+    social_pro: ["Tutto di START", "Report mensile", "Graphic design"],
+    social_premium: ["Gestione completa", "Ads + strategia", "Report e community"],
+    linkedin_biz: ["Post LinkedIn", "Articoli brevi", "Posizionamento"],
+    vid_ev_start: ["Troupe da 1 persona", "Montaggio pro", "Color e audio"],
+    vid_ev_pro: ["Troupe da 2 persone", "Riprese multicamera", "Aftermovie + teaser"],
+    vid_ev_premium: ["Troupe da 3–4 persone", "Illuminazione cinematografica", "VFX e motion graphics"],
+    vid_ev_luxury: ["Troupe da 3–5 persone", "Production design completo", "Drone + post premium"],
+    vid_fa_start: ["Troupe da 1 persona", "Montaggio pro", "Color correction"],
+    vid_fa_pro: ["Troupe da 2 persone", "Illuminazione cinematografica", "Color grading"],
+    vid_fa_premium: ["Troupe da 3–4 persone", "Sound design", "VFX e titoli"],
+    vid_fa_luxury: ["Troupe da 3–5 persone", "Production design", "Drone + post premium"],
+    vid_fa_social: ["Tagli social", "Reel verticali", "Teaser e backstage"],
+    vid_co_start: ["Troupe da 1 persona", "Montaggio pro", "Color e audio"],
+    vid_co_pro: ["Troupe da 2 persone", "Illuminazione cinematografica", "Color grading"],
+    vid_co_premium: ["Troupe da 3–4 persone", "Sound design", "VFX e titoli"],
+    vid_co_luxury: ["Troupe da 3–5 persone", "Production design", "Drone + post premium"],
+    vid_co_social: ["Tagli social", "Reel verticali", "Teaser e backstage"],
+    vid_cm_start: ["Troupe da 1 persona", "Montaggio pro", "Color e audio"],
+    vid_cm_pro: ["Troupe da 2 persone", "Illuminazione cinematografica", "Color grading"],
+    vid_cm_premium: ["Troupe da 3–4 persone", "Sound design", "VFX e titoli"],
+    vid_cm_luxury: ["Troupe da 3–5 persone", "Production design", "Drone + post premium"],
+    vid_cm_social: ["Tagli social", "Reel verticali", "Teaser e backstage"],
+    pod_start: ["2 camere, 1 host", "Registrazione audio/video", "Montaggio semplice + pubblicazione"],
+    pod_pro: ["3 camere, 2 host", "Grafiche base", "Clip social + distribuzione"],
+    pod_premium: ["4 camere, 3 host + LIVE", "Regia e grafiche", "Clip + strategia editoriale"],
+    pers_start: ["Kit brand iniziale", "Setup profilo", "Direzione contenuti"],
+    pers_premium: ["Immagine e contenuti", "Posizionamento", "Direzione continuativa"],
+    pers_professional: ["Posizionamento executive", "Presenza LinkedIn", "Contenuti professionali"],
+    pers_political: ["Identità di campagna", "Messaggio pubblico", "Contenuti e copertura"],
+    sport_start: ["Kit atleta iniziale", "Setup profilo", "Direzione contenuti"],
+    sport_premium: ["Immagine e contenuti", "Posizionamento", "Direzione continuativa"],
+    sport_team: ["Identità squadra", "Contenuti del team", "Copertura match"],
+    artist_start: ["Kit artista iniziale", "Setup profilo", "Direzione contenuti"],
+    artist_premium: ["Immagine e contenuti", "Posizionamento", "Direzione continuativa"],
+    artist_team: ["Identità band", "Contenuti del collettivo", "Copertura uscite"]
+  }
+};
+PKG_FEATURES.de = PKG_FEATURES.en;
+PKG_FEATURES.fr = PKG_FEATURES.en;
+
 /* ---- i18n runtime ----------------------------------------- */
 const I18N_STATE = { lang: "en", supported: ["en", "it", "de", "fr"] };
 
@@ -830,8 +1007,12 @@ function pkgDesc(id) {
   const lang = I18N_STATE.lang;
   return (PKG_DESC[lang] && PKG_DESC[lang][id]) || (PKG_DESC.en && PKG_DESC.en[id]) || "";
 }
+function pkgFeatures(id) {
+  const lang = I18N_STATE.lang;
+  return (PKG_FEATURES[lang] && PKG_FEATURES[lang][id]) || (PKG_FEATURES.en && PKG_FEATURES.en[id]) || [];
+}
 function setLang(lang) {
   if (I18N_STATE.supported.includes(lang)) I18N_STATE.lang = lang;
 }
 
-window.ATTO_I18N = { I18N, I18N_STATE, t, pkgName, pkgDesc, setLang };
+window.ATTO_I18N = { I18N, I18N_STATE, t, pkgName, pkgDesc, pkgFeatures, setLang };

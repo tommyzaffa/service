@@ -1,33 +1,41 @@
 /* =============================================================
    ATTO — flow.js
-   The 3-question flow: who → category → sectors → packages.
-   Filters via MATRIX. Selecting a package hands off to the
-   configurator (custom event "atto:packageselected").
+   Full wizard, one screen at a time (no page scroll):
+   who → category → sector → packages → configurator → form.
+   Single selection throughout. Filters via MATRIX. Selecting a
+   package hands off to the configurator (custom event
+   "atto:packageselected") and advances to its screen.
    ============================================================= */
 (function () {
   const D = window.ATTO_DATA;
-  const { t, pkgName, pkgDesc } = window.ATTO_I18N;
+  const { t, pkgName, pkgDesc, pkgFeatures } = window.ATTO_I18N;
   const app = window.ATTO_APP;
   const state = app.state;
 
-  const TOTAL_STEPS = 3;
+  const TOTAL_STEPS = 6;
   let current = 1;
 
   /* ---- helpers ------------------------------------------- */
   function icon(name) { return `<svg data-lucide="${name}"></svg>`; }
   function check() { return `<span class="choice__check">${icon("check")}</span>`; }
+  // Centre the last row: 1-3 → n cols, 4 → 2, 5-6 → 3, 7-8 → 4, else 4.
+  function balance(grid) {
+    if (!grid) return;
+    const n = grid.children.length;
+    const cols = n <= 3 ? Math.max(n, 1) : n === 4 ? 2 : n <= 6 ? 3 : 4;
+    grid.style.setProperty("--cols", cols);
+  }
 
   function setStep(n) {
     current = n;
     document.querySelectorAll(".flow-step").forEach(s => {
       s.classList.toggle("active", Number(s.dataset.step) === n);
     });
-    const shown = Math.min(n, TOTAL_STEPS);
     const fill = document.getElementById("flowFill");
     const label = document.getElementById("flowStepLabel");
-    fill.style.width = (shown / TOTAL_STEPS * 100) + "%";
-    label.textContent = `${t("flow.step")} ${shown} ${t("flow.of")} ${TOTAL_STEPS}`;
-    document.getElementById("flowProgress").style.display = n > TOTAL_STEPS ? "none" : "";
+    fill.style.width = (n / TOTAL_STEPS * 100) + "%";
+    label.textContent = `${t("flow.step")} ${n} ${t("flow.of")} ${TOTAL_STEPS}`;
+    document.getElementById("flow").scrollIntoView({ block: "start" });
     app.renderIcons();
   }
 
@@ -45,6 +53,7 @@
         <span class="choice__desc">${t(o.descKey)}</span>
         ${check()}
       </button>`).join("");
+    balance(grid);
     grid.querySelectorAll("[data-who]").forEach(b => {
       b.addEventListener("click", () => {
         state.who = b.dataset.who;
@@ -55,7 +64,7 @@
     });
   }
 
-  /* ---- Step 2: category ---------------------------------- */
+  /* ---- Step 2: category (single) ------------------------- */
   function renderStep2() {
     const grid = document.getElementById("step2Grid");
     if (!state.who) { grid.innerHTML = ""; return; }
@@ -68,6 +77,7 @@
         <span class="choice__desc">${t("cat." + c.id + ".desc")}</span>
         ${check()}
       </button>`).join("");
+    balance(grid);
     grid.querySelectorAll("[data-cat]").forEach(b => {
       b.addEventListener("click", () => {
         state.category = b.dataset.cat;
@@ -79,7 +89,7 @@
     app.renderIcons();
   }
 
-  /* ---- Step 3: sectors (multi) --------------------------- */
+  /* ---- Step 3: sector (single) --------------------------- */
   function renderStep3() {
     const grid = document.getElementById("step3Grid");
     if (!state.category) { grid.innerHTML = ""; return; }
@@ -95,41 +105,49 @@
         ${check()}
       </button>`;
     }).join("");
+    balance(grid);
     grid.querySelectorAll("[data-sector]").forEach(b => {
       b.addEventListener("click", () => {
-        const sid = b.dataset.sector;
-        const i = state.sectors.indexOf(sid);
-        if (i >= 0) state.sectors.splice(i, 1); else state.sectors.push(sid);
-        b.setAttribute("aria-pressed", state.sectors.includes(sid));
+        // Single selection: pick exactly one area, then see packages.
+        state.sectors = [b.dataset.sector];
+        renderResult();
+        setStep(4);
       });
     });
     app.renderIcons();
   }
 
-  /* ---- Result: packages grouped by sector ---------------- */
+  /* ---- Step 4: packages for the chosen sector ------------ */
   function renderResult() {
     const wrap = document.getElementById("resultGroups");
     if (!state.sectors.length) {
       wrap.innerHTML = `<div class="result-empty">${t("flow.result.empty")}</div>`;
       return;
     }
-    wrap.innerHTML = state.sectors.map(sid => {
-      const sec = D.SECTORS[sid];
-      const pkgs = D.PACKAGES[sid] || [];
-      const cards = pkgs.map(p => `
-        <button class="pkg-card" type="button" data-pkg="${p.id}"
-                aria-pressed="${state.selectedPackage === p.id}" style="--sector:${sec.color}">
-          <span class="pkg-card__name">${pkgName(p.id)}</span>
-          <span class="pkg-card__desc">${pkgDesc(p.id)}</span>
-          <span class="pkg-card__price">
-            <span class="pkg-card__from">${t("flow.from")}</span>
-            <span class="pkg-card__amount">${D.formatPrice(p.from, state.currency)}</span>
-          </span>
-          <span class="pkg-card__cta">
-            <span>${t("flow.configure")}</span>
-          </span>
-        </button>`).join("");
+    const sid = state.sectors[0];
+    const sec = D.SECTORS[sid];
+    const pkgs = D.PACKAGES[sid] || [];
+    const cards = pkgs.map(p => {
+      const feats = pkgFeatures(p.id);
+      const featList = feats.length
+        ? `<ul class="pkg-card__feats">${feats.map(f => `<li>${f}</li>`).join("")}</ul>`
+        : "";
       return `
+      <button class="pkg-card" type="button" data-pkg="${p.id}"
+              aria-pressed="${state.selectedPackage === p.id}" style="--sector:${sec.color}">
+        <span class="pkg-card__name">${pkgName(p.id)}</span>
+        <span class="pkg-card__desc">${pkgDesc(p.id)}</span>
+        ${featList}
+        <span class="pkg-card__price">
+          <span class="pkg-card__from">${t("flow.from")}</span>
+          <span class="pkg-card__amount">${D.formatPrice(p.from, state.currency)}</span>
+        </span>
+        <span class="pkg-card__cta">
+          <span>${t("flow.configure")}</span>
+        </span>
+      </button>`;
+    }).join("");
+    wrap.innerHTML = `
       <div class="result-group" style="--sector:${sec.color}">
         <div class="result-group__head">
           <span class="result-group__dot"></span>
@@ -137,15 +155,13 @@
         </div>
         <div class="pkg-grid">${cards}</div>
       </div>`;
-    }).join("");
+    balance(wrap.querySelector(".pkg-grid"));
 
     wrap.querySelectorAll("[data-pkg]").forEach(b => {
       b.addEventListener("click", () => {
         state.selectedPackage = b.dataset.pkg;
-        wrap.querySelectorAll("[data-pkg]").forEach(x =>
-          x.setAttribute("aria-pressed", x.dataset.pkg === state.selectedPackage));
         document.dispatchEvent(new CustomEvent("atto:packageselected", { detail: { pkgId: b.dataset.pkg } }));
-        document.getElementById("quote").scrollIntoView({ behavior: "smooth" });
+        setStep(5);
       });
     });
     app.renderIcons();
@@ -153,7 +169,6 @@
 
   /* ---- Navigation ---------------------------------------- */
   function back() {
-    if (current === 4) { setStep(3); return; }
     if (current > 1) setStep(current - 1);
   }
 
@@ -163,9 +178,8 @@
     renderStep1();
     document.getElementById("step2Grid").innerHTML = "";
     document.getElementById("step3Grid").innerHTML = "";
-    setStep(1);
     document.dispatchEvent(new CustomEvent("atto:packageselected", { detail: { pkgId: null } }));
-    document.getElementById("flow").scrollIntoView({ behavior: "smooth" });
+    setStep(1);
   }
 
   /* ---- Init ---------------------------------------------- */
@@ -173,19 +187,20 @@
     renderStep1();
     setStep(1);
     document.querySelectorAll("[data-flow-back]").forEach(b => b.addEventListener("click", back));
-    document.getElementById("flowSeeResults").addEventListener("click", () => {
-      renderResult(); setStep(4);
-    });
     document.getElementById("flowRestart").addEventListener("click", restart);
+
+    // Configurator → contact form
+    const cont = document.getElementById("quoteContinue");
+    if (cont) cont.addEventListener("click", () => setStep(6));
 
     // Re-render visible dynamic content on language/currency change
     document.addEventListener("atto:langchange", () => {
       renderStep1(); renderStep2(); renderStep3();
-      if (current === 4) renderResult();
+      if (state.sectors.length) renderResult();
       setStep(current);
     });
     document.addEventListener("atto:currencychange", () => {
-      if (current === 4) renderResult();
+      if (state.sectors.length) renderResult();
     });
   }
 
