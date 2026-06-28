@@ -549,23 +549,44 @@
         else animating = false;
       })(t0);
     }
-    const go = i => tween(targetFor(Math.max(0, Math.min(last, i))), 560);
-    // ---- touch: lock native scroll, one scene per vertical swipe ----
-    let sy = 0, sx = 0;
+    const go = (i, dur) => tween(targetFor(Math.max(0, Math.min(last, i))), dur || 460);
     const active = () => isMobile() && !document.body.classList.contains("nav-open");
-    addEventListener("touchstart", e => { sy = e.touches[0].clientY; sx = e.touches[0].clientX; }, { passive: true });
-    addEventListener("touchmove", e => {
+    /* ---- touch: the page FOLLOWS the finger during the drag (instant response,
+       native feel; programmatic scroll still doesn't hide the address bar), then
+       settles to a scene on release with a velocity-aware flick. ---- */
+    let sy = 0, sx = 0, startScroll = 0, startIdx = 0, dragging = false,
+        axis = null, lastY = 0, lastT = 0, vel = 0;
+    addEventListener("touchstart", e => {
       if (!active()) return;
-      const dy = e.touches[0].clientY - sy, dx = e.touches[0].clientX - sx;
-      if (Math.abs(dy) > Math.abs(dx)) e.preventDefault(); // suppress native scroll (and the bar hide)
+      cancelAnimationFrame(raf); animating = false;          // grab mid-animation
+      const t = e.touches[0];
+      sy = lastY = t.clientY; sx = t.clientX; startScroll = scrollY;
+      startIdx = currentIndex(); lastT = performance.now(); vel = 0;
+      dragging = true; axis = null;
+    }, { passive: true });
+    addEventListener("touchmove", e => {
+      if (!dragging || !active()) return;
+      const t = e.touches[0], dy = t.clientY - sy, dx = t.clientX - sx;
+      if (axis === null && (Math.abs(dy) > 6 || Math.abs(dx) > 6))
+        axis = Math.abs(dy) >= Math.abs(dx) ? "y" : "x";
+      if (axis !== "y") return;                               // let horizontal gestures be
+      e.preventDefault();
+      scrollTo(0, Math.max(0, Math.min(startScroll - dy, maxScroll())));  // follow finger 1:1
+      const now = performance.now(), dt = now - lastT;
+      if (dt > 0) vel = (t.clientY - lastY) / dt;             // px/ms, negative = finger up
+      lastY = t.clientY; lastT = now;
     }, { passive: false });
     addEventListener("touchend", e => {
-      if (!active() || animating) return;
-      const ey = (e.changedTouches[0] || {}).clientY;
-      if (ey == null) return;
-      const delta = sy - ey; // >0 = swipe up = next scene
-      if (Math.abs(delta) < 36) return; // tap / tiny move -> let clicks through
-      go(currentIndex() + (delta > 0 ? 1 : -1));
+      if (!dragging) return;
+      dragging = false;
+      if (axis !== "y") return;                               // a tap / horizontal -> let clicks through
+      const dragged = sy - ((e.changedTouches[0] || {}).clientY ?? sy); // >0 = up = next
+      const flick = Math.abs(vel) > 0.3;                      // quick swipe
+      let target;
+      if (flick) target = startIdx + (vel < 0 ? 1 : -1);      // finger up -> next scene
+      else if (Math.abs(dragged) > innerHeight * 0.2) target = startIdx + (dragged > 0 ? 1 : -1);
+      else target = currentIndex();                           // small move -> settle to nearest
+      go(target, flick ? 360 : 480);                          // faster settle for a flick
     }, { passive: true });
     // ---- wheel (small-width trackpad/mouse) ----
     let wlock = false;
@@ -573,7 +594,7 @@
       if (!active()) return;
       e.preventDefault();
       if (animating || wlock || Math.abs(e.deltaY) < 8) return;
-      wlock = true; setTimeout(() => { wlock = false; }, 640);
+      wlock = true; setTimeout(() => { wlock = false; }, 560);
       go(currentIndex() + (e.deltaY > 0 ? 1 : -1));
     }, { passive: false });
   }
