@@ -502,6 +502,14 @@
         scenes.forEach((s, idx) => s.classList.toggle("is-active", idx === active));
         if (curEl) curEl.textContent = String(active + 1).padStart(2, "0");
         if (nameEl) nameEl.textContent = scenes[active].dataset.name || "";
+        /* MOBILE last-scene footer fix: the dynamic address bar resizes the
+           viewport and mandatory snap RE-ALIGNS the last scene = the "scatto".
+           Disable snap ONLY while the last scene is active so its footer scrolls
+           freely and a bar toggle can't re-snap it; restore mandatory (CSS) on
+           every other scene. Desktop (>760px) is never touched. */
+        if (matchMedia("(max-width:760px)").matches)
+          document.documentElement.style.scrollSnapType =
+            active === scenes.length - 1 ? "none" : "";
       }
       if (progEl) {
         const max = document.documentElement.scrollHeight - vh;

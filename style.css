@@ -825,14 +825,7 @@ html:has(body[data-bg="field"]){scroll-snap-type:y mandatory}
      don't dip to a dark flash
    - the work scene is shrunk to fit one screen so its link clears the rail */
 @media (max-width:760px){
-  /* MOBILE snap = proximity (desktop stays mandatory, untouched). With the
-     dynamic address bar, mandatory is fundamentally incompatible with the last
-     scene: as a snap target it gets RE-SNAPPED on every bar show/hide (= the
-     "scatto"), and as a non-target mandatory BOUNCES you back to scene 5 (can't
-     reach it). proximity snaps the scenes when you arrive (the snappy feel) but
-     never FORCES a re-snap on a bar toggle and never bounces you back, so the
-     footer scene stays put. */
-  html:has(body[data-bg="field"]){scroll-snap-type:y proximity}
+  html:has(body[data-bg="field"]){scroll-snap-type:y mandatory}
   .scene{height:100svh}
   .scene__pin{padding:84px clamp(20px,6vw,40px) 60px}
   .scene__c{max-height:none;
@@ -844,7 +837,4 @@ html:has(body[data-bg="field"]){scroll-snap-type:y mandatory}
   .cwork__strip .cplate{aspect-ratio:1/1}
   .clink{margin-top:16px}
   .cine__rail{bottom:14px;left:16px}
-  /* last scene keeps scroll-snap-align:start (inherited): with proximity it
-     snaps in nicely on arrival but isn't force-re-snapped when the bar toggles.
-     Content centred like desktop, footer pinned at the bottom. */
 }
