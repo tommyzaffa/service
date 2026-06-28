@@ -815,17 +815,21 @@ html:has(body[data-bg="field"]){scroll-snap-type:y mandatory}
 @media (prefers-reduced-motion: reduce){.intro{display:none}}
 
 /* mobile: KEEP the cinematic snap-scroll but make it robust on phones —
-   - svh-tall scenes so the iOS address bar showing/hiding no longer mismatches
-     100vh and causes seams/flashes between scenes
+   - ALL scenes use 100dvh: the dynamic viewport always equals the CURRENT
+     visual viewport, so every scene fills the screen exactly. This avoids both
+     the old 100vh bleed/seam (vh == large viewport, taller than the screen when
+     the address bar is shown) AND the svh footer-gap (svh == small viewport,
+     shorter than the screen when the bar hides). It must be the SAME unit on
+     EVERY scene — mixing svh on 1-5 with dvh on the last scene made the 5->6
+     boundary mismatch as the bar animated, so scene 6 arrived with the footer
+     cut and then "snapped" into place once dvh caught up.
    - a cross-fade floor (opacity never hits 0) + gentler parallax so fast snaps
      don't dip to a dark flash
-   - the footer lives INSIDE the last scene (CTA + footer = one snap target);
-     that last scene uses 100dvh so it tracks the address bar and the footer
-     always hugs the true bottom (svh would end at the small-viewport mark and
-     leave a gap below when the bar hides = footer looks detached)
+   - the footer lives INSIDE the last scene (CTA + footer = one dvh snap target),
+     so it always hugs the true bottom of the viewport
    - the work scene is shrunk to fit one screen so its link clears the rail */
 @media (max-width:760px){
-  .scene{height:100svh}
+  .scene{height:100dvh}
   .scene__pin{padding:84px clamp(20px,6vw,40px) 60px}
   .scene__c{max-height:none;
     opacity:calc(.42 + var(--vis,0)*.58);
@@ -836,9 +840,6 @@ html:has(body[data-bg="field"]){scroll-snap-type:y mandatory}
   .cwork__strip .cplate{aspect-ratio:1/1}
   .clink{margin-top:16px}
   .cine__rail{bottom:14px;left:16px}
-  /* last scene = CTA + footer, integral: track the dynamic viewport so the
-     footer sits at the real bottom even as the iOS address bar shows/hides */
-  .scene--cta{height:100dvh}
   .scene--cta .ccta__h{margin-bottom:clamp(20px,5vw,32px)}
   .scene--cta .foot{padding:20px clamp(20px,4vw,52px)}
 }
