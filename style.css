@@ -825,7 +825,14 @@ html:has(body[data-bg="field"]){scroll-snap-type:y mandatory}
      don't dip to a dark flash
    - the work scene is shrunk to fit one screen so its link clears the rail */
 @media (max-width:760px){
-  html:has(body[data-bg="field"]){scroll-snap-type:y mandatory}
+  /* MOBILE snap = proximity (desktop stays mandatory, untouched). With the
+     dynamic address bar, mandatory is fundamentally incompatible with the last
+     scene: as a snap target it gets RE-SNAPPED on every bar show/hide (= the
+     "scatto"), and as a non-target mandatory BOUNCES you back to scene 5 (can't
+     reach it). proximity snaps the scenes when you arrive (the snappy feel) but
+     never FORCES a re-snap on a bar toggle and never bounces you back, so the
+     footer scene stays put. */
+  html:has(body[data-bg="field"]){scroll-snap-type:y proximity}
   .scene{height:100svh}
   .scene__pin{padding:84px clamp(20px,6vw,40px) 60px}
   .scene__c{max-height:none;
@@ -837,14 +844,7 @@ html:has(body[data-bg="field"]){scroll-snap-type:y mandatory}
   .cwork__strip .cplate{aspect-ratio:1/1}
   .clink{margin-top:16px}
   .cine__rail{bottom:14px;left:16px}
-  /* LAST scene footer (mobile address-bar fix). The "scatto" is the SNAP ENGINE
-     re-aligning the last scene whenever the address bar shows/hides (a viewport
-     resize forces mandatory snap to re-evaluate). Taking the last scene OUT of
-     the snap (scroll-snap-align:none) removes the only snap point that can move,
-     so a bar toggle no longer re-snaps it = no jump. Scenes 1-5 keep snapping.
-     The scene is a full 100svh with the footer inside it, so mandatory doesn't
-     bounce back to scene 5 once the cta fills the viewport. Content stays CENTRED
-     like desktop (inherits .scene--cta .scene__c{flex:1;justify-content:center}),
-     footer pinned at the bottom (desktop pin padding-bottom:0). */
-  .scene--cta{scroll-snap-align:none}
+  /* last scene keeps scroll-snap-align:start (inherited): with proximity it
+     snaps in nicely on arrival but isn't force-re-snapped when the bar toggles.
+     Content centred like desktop, footer pinned at the bottom. */
 }
