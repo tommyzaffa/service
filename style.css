@@ -95,13 +95,13 @@ html.theme-switching .field textarea,
 html.theme-switching .field select,
 html.theme-switching .quote-summary{
   transition-property:background,background-color,color,border-color,box-shadow,opacity,filter;
-  transition-duration:.85s;
+  transition-duration:2.5s;
   transition-timing-function:var(--ease);
 }
 
 ::view-transition-old(root),
 ::view-transition-new(root){
-  animation-duration:.85s;
+  animation-duration:2.5s;
   animation-timing-function:var(--ease);
   animation-fill-mode:both;
   mix-blend-mode:normal;
