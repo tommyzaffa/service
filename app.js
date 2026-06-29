@@ -472,7 +472,7 @@
       } else {
         root.classList.add("theme-switching");
         commit();
-        setTimeout(() => root.classList.remove("theme-switching"), 720);
+        setTimeout(() => root.classList.remove("theme-switching"), 900);
       }
     }
     function mkBtn() {

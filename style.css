@@ -95,13 +95,13 @@ html.theme-switching .field textarea,
 html.theme-switching .field select,
 html.theme-switching .quote-summary{
   transition-property:background,background-color,color,border-color,box-shadow,opacity,filter;
-  transition-duration:.68s;
+  transition-duration:.85s;
   transition-timing-function:var(--ease);
 }
 
 ::view-transition-old(root),
 ::view-transition-new(root){
-  animation-duration:.72s;
+  animation-duration:.85s;
   animation-timing-function:var(--ease);
   animation-fill-mode:both;
   mix-blend-mode:normal;
@@ -1033,10 +1033,13 @@ html:not([data-theme="dark"]) .scene-glow{opacity:.72}
 @media (max-width:760px){
   html:has(body[data-bg="field"]){scroll-snap-type:none}
   .scene{height:auto;min-height:auto;scroll-snap-align:none;scroll-snap-stop:normal}
+  .scene-glow{opacity:.68;transition:background .7s var(--ease),opacity .7s var(--ease)}
+  html:not([data-theme="dark"]) .scene-glow{opacity:.76}
+  html[data-theme="dark"] .scene-glow{opacity:.5}
   .scene__pin{height:auto;min-height:0;display:block;overflow:visible;pointer-events:auto;
     padding:clamp(72px,18vw,108px) clamp(20px,6vw,40px)}
   .scene__c{width:100%;max-height:none;opacity:1;transform:none;pointer-events:auto;transition:none}
-  .scene__bg{display:block;opacity:.42}
+  .scene__bg{display:none;opacity:0}
   .scene--intro .scene__pin{min-height:100svh;display:flex;align-items:center;
     padding-top:clamp(96px,24vw,132px);padding-bottom:clamp(56px,14vw,76px)}
   .scene--mani .scene__pin{padding-top:clamp(72px,18vw,104px);padding-bottom:clamp(54px,14vw,82px)}
