@@ -17,6 +17,16 @@
 
   /* ---- helpers ------------------------------------------- */
   function icon(name) { return `<svg data-lucide="${name}"></svg>`; }
+  // Each service family has a "soul": its own colour + typographic/shape identity.
+  // data-soul drives the per-category styling of the package cards (see style.css).
+  function soulOf(sid) {
+    if (sid === "web") return { soul: "web", c: "#2E6E6E" };
+    if (sid === "branding") return { soul: "graphic", c: "#B5552B" };
+    if (sid === "social") return { soul: "social", c: "#3A5A8C" };
+    if (sid === "podcast") return { soul: "podcast", c: "#C0492F" };
+    if (sid.indexOf("video") === 0) return { soul: "video", c: "#A33159" };
+    return { soul: "generic", c: (D.SECTORS[sid] || {}).color || "#2F7E72" };
+  }
   function check() { return `<span class="choice__check">${icon("check")}</span>`; }
   // Centre the last row: 1-3 → n cols, 4 → 2, 5-6 → 3, 7-8 → 4, else 4.
   function balance(grid) {
@@ -73,6 +83,7 @@
     );
     grid.innerHTML = cats.map(c => `
       <button class="choice" type="button" data-cat="${c.id}" aria-pressed="${state.category === c.id}">
+        <span class="choice__icon">${icon(c.icon)}</span>
         <span class="choice__title">${t("cat." + c.id + ".name")}</span>
         <span class="choice__desc">${t("cat." + c.id + ".desc")}</span>
         ${check()}
@@ -126,6 +137,7 @@
     }
     const sid = state.sectors[0];
     const sec = D.SECTORS[sid];
+    const soul = soulOf(sid);
     const pkgs = D.PACKAGES[sid] || [];
     const cards = pkgs.map(p => {
       const feats = pkgFeatures(p.id);
@@ -133,8 +145,8 @@
         ? `<ul class="pkg-card__feats">${feats.map(f => `<li>${f}</li>`).join("")}</ul>`
         : "";
       return `
-      <button class="pkg-card" type="button" data-pkg="${p.id}"
-              aria-pressed="${state.selectedPackage === p.id}" style="--sector:${sec.color}">
+      <button class="pkg-card" type="button" data-pkg="${p.id}" data-soul="${soul.soul}"
+              aria-pressed="${state.selectedPackage === p.id}" style="--sector:${soul.c}">
         <span class="pkg-card__name">${pkgName(p.id)}</span>
         <span class="pkg-card__desc">${pkgDesc(p.id)}</span>
         ${featList}
@@ -148,7 +160,7 @@
       </button>`;
     }).join("");
     wrap.innerHTML = `
-      <div class="result-group" style="--sector:${sec.color}">
+      <div class="result-group" data-soul="${soul.soul}" style="--sector:${soul.c}">
         <div class="result-group__head">
           <span class="result-group__dot"></span>
           <span class="result-group__title">${t("sec." + sid + ".name")}</span>

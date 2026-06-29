@@ -10,6 +10,13 @@
   const D = window.ATTO_DATA;
   const I = window.ATTO_I18N;
 
+  /* set the theme attribute ASAP (before paint) to avoid a flash on dark */
+  try {
+    document.documentElement.dataset.theme =
+      localStorage.getItem("atto-theme") ||
+      (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  } catch (e) {}
+
   /* ============ concept-only copy (en + it + de + fr) ===== */
   const CC = {
     en: {
@@ -221,7 +228,18 @@
     megaphone: '<path d="M3 11l14-6v14L3 13z"/><path d="M3 11v3M7 19l-1-5.5"/>',
     mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/>',
     trophy: '<path d="M8 4h8v5a4 4 0 01-8 0z"/><path d="M12 13v3M9 20h6"/><path d="M8 5H5v1a3 3 0 003 3M16 5h3v1a3 3 0 01-3 3"/>',
-    music: '<path d="M9 18V5l10-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="16" cy="16" r="3"/>'
+    music: '<path d="M9 18V5l10-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="16" cy="16" r="3"/>',
+    rocket: '<path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 00-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 012-3.95A12.88 12.88 0 0122 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 01-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/>',
+    store: '<path d="M3 9l1.5-5h15L21 9"/><path d="M4 9v10a1 1 0 001 1h14a1 1 0 001-1V9"/><path d="M3 9h18"/><path d="M9 20v-6h6v6"/>',
+    factory: '<path d="M2 20V9l6 4V9l6 4V9l6 4v7z"/><path d="M2 20h20M7 16h.01M12 16h.01M17 16h.01"/>',
+    landmark: '<path d="M3 21h18M5 21V10M19 21V10M9 21v-7M15 21v-7"/><path d="M12 3l9 5H3z"/>',
+    laptop: '<rect x="4" y="5" width="16" height="11" rx="1"/><path d="M2 20h20"/>',
+    camera: '<path d="M5 7l1.5-2h7L15 7h3a1 1 0 011 1v9a1 1 0 01-1 1H4a1 1 0 01-1-1V8a1 1 0 011-1z"/><circle cx="11" cy="12.5" r="3.2"/>',
+    palette: '<path d="M12 3a9 9 0 000 18c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1-.23-.27-.39-.62-.39-1 0-.83.67-1.5 1.5-1.5H16a5 5 0 005-5c0-4.42-4.03-8-9-8z"/><circle cx="7.5" cy="10.5" r="1"/><circle cx="12" cy="7.5" r="1"/><circle cx="16.5" cy="10.5" r="1"/>',
+    star: '<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/>',
+    sparkles: '<path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6z"/><path d="M5 16l.7 2L8 18.6l-2.3.6L5 22l-.7-2.8L2 18.6l2.3-.6z"/><path d="M19 13l.5 1.5L21 15l-1.5.5L19 17l-.5-1.5L17 15l1.5-.5z"/>',
+    sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+    moon: '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>'
   };
   function renderIcons() {
     document.querySelectorAll("svg[data-lucide]").forEach(svg => {
@@ -258,11 +276,23 @@
     const x = c.getContext("2d");
     const DPR = Math.min(devicePixelRatio || 1, 2);
     let W, H, mx = -9999, my = -9999;
-    function size() { W = c.width = innerWidth * DPR; H = c.height = innerHeight * DPR; c.style.width = innerWidth + "px"; c.style.height = innerHeight + "px"; x.fillStyle = "#0c0e0f"; x.fillRect(0, 0, W, H); }
+    // canvas follows the theme: fill = --bg, draw = additive(lighter) on dark / solid on light.
+    let PAPER = "#F3ECDF", BLEND = "source-over", DARK = false;
+    function readTheme() {
+      const dark = document.documentElement.dataset.theme === "dark";
+      DARK = dark;
+      PAPER = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim() || (dark ? "#17130E" : "#F3ECDF");
+      BLEND = dark ? "lighter" : "source-over";
+    }
+    readTheme();
+    document.addEventListener("atto:themechange", readTheme);
+    function size() { W = c.width = innerWidth * DPR; H = c.height = innerHeight * DPR; c.style.width = innerWidth + "px"; c.style.height = innerHeight + "px"; x.fillStyle = PAPER; x.fillRect(0, 0, W, H); }
     addEventListener("resize", size); size();
     addEventListener("mousemove", e => { mx = e.clientX * DPR; my = e.clientY * DPR; });
     addEventListener("mouseout", () => { mx = my = -9999; });
-    const cols = ["#5FB3A6", "#2F7E72", "#A7D8CF", "#3E8C80"];
+    const cols = ["#667547", "#9E4567", "#A33159", "#785BA3", "#8B6DCB", "#A85A4F"]; // warm category souls
+    const WARM = "#737A45", WARM_RGB = "115,122,69";
+    const PAL_RGB = [[102, 117, 71], [158, 69, 103], [163, 49, 89], [120, 91, 163], [139, 109, 203], [168, 90, 79]];
     const mode = document.body.dataset.bg || "field";
 
     if (mode === "field") {                       /* HOME — rising embers, depth-sorted, no trails (campfire) */
@@ -276,14 +306,25 @@
         p.vy = -(.12 + p.z * .55) * DPR;                           // near embers rise faster (parallax)
         p.r = (.4 + p.z * 1.5) * DPR;                              // near embers bigger
         p.fr = .02 + Math.random() * .05; p.ph = Math.random() * 6.28; p.wob = Math.random() * 6.28;
-        p.col = Math.random() < .14 ? "#FF8A5E" : cols[(Math.random() * cols.length) | 0];
+        p.col = Math.random() < .14 ? WARM : cols[(Math.random() * cols.length) | 0];
       };
       for (let i = 0; i < N; i++) { const p = {}; spawn(p, true); P.push(p); }
       P.sort((a, b) => a.z - b.z);                                 // far drawn first
       const R = 150 * DPR;
       (function frame() {
-        x.globalCompositeOperation = "source-over"; x.fillStyle = "#0c0e0f"; x.fillRect(0, 0, W, H);  // full clear -> no lines
-        x.globalCompositeOperation = "lighter";
+        x.globalCompositeOperation = "source-over"; x.fillStyle = PAPER; x.fillRect(0, 0, W, H);  // full clear -> no lines
+        if (!DARK) {
+          const g1 = x.createRadialGradient(W * .16, H * .16, 0, W * .16, H * .16, Math.max(W, H) * .72);
+          g1.addColorStop(0, "rgba(158,69,103,.105)"); g1.addColorStop(1, "rgba(158,69,103,0)");
+          x.fillStyle = g1; x.fillRect(0, 0, W, H);
+          const g2 = x.createRadialGradient(W * .86, H * .34, 0, W * .86, H * .34, Math.max(W, H) * .62);
+          g2.addColorStop(0, "rgba(120,91,163,.075)"); g2.addColorStop(1, "rgba(120,91,163,0)");
+          x.fillStyle = g2; x.fillRect(0, 0, W, H);
+          const g3 = x.createRadialGradient(W * .54, H * .92, 0, W * .54, H * .92, Math.max(W, H) * .7);
+          g3.addColorStop(0, "rgba(102,117,71,.09)"); g3.addColorStop(1, "rgba(102,117,71,0)");
+          x.fillStyle = g3; x.fillRect(0, 0, W, H);
+        }
+        x.globalCompositeOperation = BLEND;
         for (const p of P) {
           p.wob += .02; p.ph += p.fr;
           let vx = p.vx + Math.sin(p.wob) * .1 * DPR * (.4 + p.z), vy = p.vy;
@@ -300,49 +341,57 @@
         x.globalAlpha = 1; requestAnimationFrame(frame);
       })();
 
-    } else if (mode === "grid") {                 /* WORK — warping dot grid */
+    } else if (mode === "grid") {                 /* WORK — warping dot grid: grey at rest, multicolour near cursor */
+      const PAL = PAL_RGB;
+      const GREY = [128, 123, 114];               // desaturated, quiet when far from the cursor
       let t = 0;
       (function frame() {
-        t += .01; x.globalCompositeOperation = "source-over"; x.fillStyle = "#0c0e0f"; x.fillRect(0, 0, W, H);
+        t += .01; x.globalCompositeOperation = "source-over"; x.fillStyle = PAPER; x.fillRect(0, 0, W, H);
         const gap = 46 * DPR, R = 230 * DPR;
-        x.globalCompositeOperation = "lighter";
-        for (let gx = gap; gx < W; gx += gap) for (let gy = gap; gy < H; gy += gap) {
+        x.globalCompositeOperation = BLEND;
+        for (let gx = gap, ix = 0; gx < W; gx += gap, ix++) for (let gy = gap, iy = 0; gy < H; gy += gap, iy++) {
           const wob = Math.sin(gx * .01 + t) * Math.cos(gy * .01 - t) * 4 * DPR;
-          let px = gx + wob, py = gy + wob, r = 1.1 * DPR, a = .14;
+          let px = gx + wob, py = gy + wob, r = 1.1 * DPR, a = .14, warm = 0;
           const dx = px - mx, dy = py - my, d = Math.hypot(dx, dy);
-          let warm = 0;
           if (d < R) { const f = 1 - d / R; px += dx / (d || 1) * f * 26 * DPR; py += dy / (d || 1) * f * 26 * DPR; r += f * 2.6 * DPR; a += f * .6; warm = f; }
-          x.fillStyle = warm > .35 ? `rgba(255,138,94,${a})` : `rgba(95,179,166,${a})`; x.beginPath(); x.arc(px, py, r, 0, 7); x.fill();
+          const col = PAL[(ix * 3 + iy * 5) % PAL.length], k = Math.min(1, warm * 1.5);  // grey -> its colour near cursor
+          const rr = GREY[0] + (col[0] - GREY[0]) * k, gg = GREY[1] + (col[1] - GREY[1]) * k, bb = GREY[2] + (col[2] - GREY[2]) * k;
+          x.fillStyle = `rgba(${rr | 0},${gg | 0},${bb | 0},${a})`; x.beginPath(); x.arc(px, py, r, 0, 7); x.fill();
         }
         requestAnimationFrame(frame);
       })();
 
     } else if (mode === "orbs") {                 /* ABOUT — drifting soft orbs */
-      const orbs = Array.from({ length: 5 }, (_, i) => ({ h: i === 0 ? "#FF8A5E" : cols[i % cols.length], ox: Math.random(), oy: Math.random(), sx: (.4 + Math.random()) * .0002, sy: (.4 + Math.random()) * .0002, ph: Math.random() * 9, r: .3 + Math.random() * .3 }));
+      const orbs = Array.from({ length: 5 }, (_, i) => ({ h: i === 0 ? WARM : cols[i % cols.length], ox: Math.random(), oy: Math.random(), sx: (.4 + Math.random()) * .0002, sy: (.4 + Math.random()) * .0002, ph: Math.random() * 9, r: .3 + Math.random() * .3 }));
       let tm = 0;
       (function frame() {
-        tm += 16; x.globalCompositeOperation = "source-over"; x.fillStyle = "#0c0e0f"; x.fillRect(0, 0, W, H);
-        x.globalCompositeOperation = "lighter"; x.globalAlpha = .08;
+        tm += 16; x.globalCompositeOperation = "source-over"; x.fillStyle = PAPER; x.fillRect(0, 0, W, H);
+        x.globalCompositeOperation = BLEND; x.globalAlpha = .16;
         orbs.forEach((b, i) => { const gx = (b.ox + Math.sin(tm * b.sx + b.ph) * .18 + (mx > 0 ? (mx / W - .5) * .08 : 0)) * W, gy = (b.oy + Math.cos(tm * b.sy + b.ph) * .18 + (my > 0 ? (my / H - .5) * .08 : 0)) * H, rad = b.r * Math.min(W, H), g = x.createRadialGradient(gx, gy, 0, gx, gy, rad); g.addColorStop(0, b.h); g.addColorStop(1, b.h + "00"); x.fillStyle = g; x.beginPath(); x.arc(gx, gy, rad, 0, 7); x.fill(); });
         x.globalAlpha = 1; requestAnimationFrame(frame);
       })();
 
-    } else if (mode === "waves") {                /* CONTACT — flowing line waves */
+    } else if (mode === "waves") {                /* CONTACT — flowing line waves: quiet at rest, multicolour near cursor */
       let t = 0;
       (function frame() {
-        t += .012; x.globalCompositeOperation = "source-over"; x.fillStyle = "#0c0e0f"; x.fillRect(0, 0, W, H);
-        x.globalCompositeOperation = "lighter"; x.lineWidth = 1.2 * DPR;
+        t += .012; x.globalCompositeOperation = "source-over"; x.fillStyle = PAPER; x.fillRect(0, 0, W, H);
+        x.globalCompositeOperation = BLEND; x.lineWidth = 1.2 * DPR;
         const lines = 26, my0 = my > 0 ? my : H / 2;
         for (let i = 0; i < lines; i++) {
           const baseY = (i + 1) / (lines + 1) * H;
           const prox = 1 - Math.min(1, Math.abs(baseY - my0) / (H * .5));
+          const col = PAL_RGB[(i * 2 + Math.floor(t * 10)) % PAL_RGB.length];
+          const rest = [126, 116, 106], k = Math.min(1, prox * 1.45);
+          const rr = rest[0] + (col[0] - rest[0]) * k;
+          const gg = rest[1] + (col[1] - rest[1]) * k;
+          const bb = rest[2] + (col[2] - rest[2]) * k;
           x.beginPath();
           for (let px = 0; px <= W; px += 14 * DPR) {
             const amp = (16 + prox * 60) * DPR;
             const y = baseY + Math.sin(px * .006 + t + i * .5) * amp + Math.cos(px * .013 - t) * amp * .4;
             px === 0 ? x.moveTo(px, y) : x.lineTo(px, y);
           }
-          x.strokeStyle = `rgba(${prox > .55 ? "255,138,94" : "95,179,166"},${.05 + prox * .22})`; x.stroke();
+          x.strokeStyle = `rgba(${rr | 0},${gg | 0},${bb | 0},${.06 + prox * .28})`; x.stroke();
         }
         requestAnimationFrame(frame);
       })();
@@ -352,8 +401,8 @@
       const P = Array.from({ length: N }, () => ({ x: Math.random() * W, y: Math.random() * H, vx: (Math.random() - .5) * .35 * DPR, vy: (Math.random() - .5) * .35 * DPR, sp: Math.random() < .12 }));
       const LINK = 140 * DPR, RM = 150 * DPR;
       (function frame() {
-        x.globalCompositeOperation = "source-over"; x.fillStyle = "#0c0e0f"; x.fillRect(0, 0, W, H);
-        x.globalCompositeOperation = "lighter";
+        x.globalCompositeOperation = "source-over"; x.fillStyle = PAPER; x.fillRect(0, 0, W, H);
+        x.globalCompositeOperation = BLEND;
         for (const p of P) {
           p.x += p.vx; p.y += p.vy;
           if (p.x < 0 || p.x > W) p.vx *= -1; if (p.y < 0 || p.y > H) p.vy *= -1;
@@ -363,10 +412,10 @@
         for (let i = 0; i < P.length; i++) {
           for (let j = i + 1; j < P.length; j++) {
             const dx = P[i].x - P[j].x, dy = P[i].y - P[j].y, d = Math.hypot(dx, dy);
-            if (d < LINK) { x.strokeStyle = `rgba(95,179,166,${(1 - d / LINK) * .16})`; x.lineWidth = 1 * DPR; x.beginPath(); x.moveTo(P[i].x, P[i].y); x.lineTo(P[j].x, P[j].y); x.stroke(); }
+            if (d < LINK) { const col = PAL_RGB[(i + j) % PAL_RGB.length]; x.strokeStyle = `rgba(${col[0]},${col[1]},${col[2]},${(1 - d / LINK) * .2})`; x.lineWidth = 1 * DPR; x.beginPath(); x.moveTo(P[i].x, P[i].y); x.lineTo(P[j].x, P[j].y); x.stroke(); }
           }
         }
-        for (const p of P) { x.fillStyle = p.sp ? "rgba(255,138,94,.7)" : "rgba(95,179,166,.5)"; x.beginPath(); x.arc(p.x, p.y, (p.sp ? 2 : 1.5) * DPR, 0, 7); x.fill(); }
+        for (let i = 0; i < P.length; i++) { const p = P[i], col = p.sp ? [158, 69, 103] : PAL_RGB[i % PAL_RGB.length]; x.fillStyle = `rgba(${col[0]},${col[1]},${col[2]},${p.sp ? .85 : .55})`; x.beginPath(); x.arc(p.x, p.y, (p.sp ? 2 : 1.5) * DPR, 0, 7); x.fill(); }
         requestAnimationFrame(frame);
       })();
     }
@@ -389,6 +438,55 @@
     addEventListener("keydown", e => { if (e.key === "Escape") set(false); });
     // language buttons (overlay + header)
     document.querySelectorAll("[data-lang]").forEach(b => b.addEventListener("click", () => setLang(b.dataset.lang)));
+  }
+
+  /* ============ theme toggle (light cream ⇆ dark espresso) ============ */
+  function initTheme() {
+    function apply(tm) {
+      document.documentElement.dataset.theme = tm;
+      document.querySelectorAll(".theme-toggle").forEach(b => {
+        b.setAttribute("aria-pressed", tm === "dark" ? "true" : "false");
+        b.setAttribute("aria-label", tm === "dark" ? "Switch to light theme" : "Switch to dark theme");
+        const ico = b.querySelector(".theme-ico");
+        if (ico) { ico.innerHTML = `<svg data-lucide="${tm === "dark" ? "sun" : "moon"}"></svg>`; }
+      });
+      renderIcons();
+      document.dispatchEvent(new CustomEvent("atto:themechange", { detail: { theme: tm } }));
+    }
+    function toggle(e) {
+      const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+      const root = document.documentElement;
+      const r = e?.currentTarget?.getBoundingClientRect?.();
+      const x = r ? r.left + r.width / 2 : innerWidth - 52;
+      const y = r ? r.top + r.height / 2 : 38;
+      root.style.setProperty("--theme-x", `${x}px`);
+      root.style.setProperty("--theme-y", `${y}px`);
+      const commit = () => {
+        try { localStorage.setItem("atto-theme", next); } catch (e) {}
+        apply(next);
+      };
+      if (document.startViewTransition && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        root.classList.add("theme-switching");
+        const vt = document.startViewTransition(commit);
+        vt.finished.finally(() => root.classList.remove("theme-switching"));
+      } else {
+        root.classList.add("theme-switching");
+        commit();
+        setTimeout(() => root.classList.remove("theme-switching"), 720);
+      }
+    }
+    function mkBtn() {
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "theme-toggle"; b.dataset.hot = "";
+      b.innerHTML = '<span class="theme-ico"></span>';
+      b.addEventListener("click", toggle);
+      return b;
+    }
+    const right = document.querySelector(".bar__right");
+    if (right) right.insertBefore(mkBtn(), right.querySelector(".bar__cta") || right.firstChild);
+    const foot = document.querySelector(".overlay__foot");
+    if (foot) foot.appendChild(mkBtn());
+    apply(document.documentElement.dataset.theme || "light");
   }
 
   /* ============ kinetic headline (outline→fill by proximity) ============ */
@@ -435,11 +533,11 @@
 
   /* ============ composed lead photos (PROFESSIONAL-PLUS) ============ */
   const GRADS = [
-    "linear-gradient(135deg,#172825,#2f6357 60%,#5fb3a6)",
-    "linear-gradient(160deg,#13201e,#356f62,#a7d8cf)",
-    "linear-gradient(120deg,#15201d,#3d8072,#74c4b7)",
-    "linear-gradient(150deg,#101817,#2b5a51,#5fb3a6)",
-    "linear-gradient(135deg,#16241f,#39786a,#8ed0c4)"
+    "linear-gradient(135deg,#241817,#5D2A43 58%,#B87591)",
+    "linear-gradient(160deg,#1F1916,#667547 58%,#C4C776)",
+    "linear-gradient(120deg,#21161C,#785BA3,#D2B5E8)",
+    "linear-gradient(150deg,#1D1716,#A33159,#D57C72)",
+    "linear-gradient(135deg,#201816,#9E4567,#C8A0AE)"
   ];
   // Stable, intentional frame — no idle floating bob; only a faint mouse parallax.
   function initLeadPhotos() {
@@ -467,16 +565,16 @@
           glowEl = document.getElementById("sceneGlow");
     if (totEl) totEl.textContent = String(scenes.length).padStart(2, "0");
     const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
-    /* one glow per scene (x%,y% position + rgb,a colour) — matches the old sb-1..6 tints.
+    /* one glow per scene (x%,y% position + rgb,a colour) — warm, layered tints.
        initCine blends these by visibility so the single #sceneGlow travels+recolours
        continuously across sections (the next scene's light is anticipated, no cut). */
     const GLOWS = [
-      { x: 50, y: 14, r: 95,  g: 179, b: 166, a: .20 },  // intro
-      { x: 20, y: 32, r: 95,  g: 179, b: 166, a: .22 },  // manifesto
-      { x: 80, y: 50, r: 47,  g: 126, b: 114, a: .24 },  // servizi
-      { x: 30, y: 74, r: 95,  g: 179, b: 166, a: .20 },  // studio
-      { x: 50, y: 58, r: 116, g: 196, b: 183, a: .20 },  // lavori
-      { x: 50, y: 48, r: 95,  g: 179, b: 166, a: .26 },  // cta
+      { x: 50, y: 14, r: 142, g: 63,  b: 95,  a: .19 },  // intro
+      { x: 20, y: 32, r: 120, g: 91,  b: 163, a: .18 },  // manifesto
+      { x: 80, y: 50, r: 115, g: 122, b: 69,  a: .20 },  // servizi
+      { x: 30, y: 74, r: 158, g: 69,  b: 103, a: .17 },  // studio
+      { x: 50, y: 58, r: 168, g: 90,  b: 79,  a: .18 },  // lavori
+      { x: 50, y: 48, r: 139, g: 109, b: 203, a: .20 },  // cta
     ];
     let activeIdx = -1;
     (function frame() {
@@ -495,7 +593,13 @@
       });
       if (glowEl && gw > 0) {
         gx /= gw; gy /= gw; gr /= gw; gg /= gw; gb /= gw; ga /= gw;
-        glowEl.style.background = `radial-gradient(95% 80% at ${gx.toFixed(1)}% ${gy.toFixed(1)}%,rgba(${gr | 0},${gg | 0},${gb | 0},${ga.toFixed(3)}),transparent 63%)`;
+        const sx = clamp(100 - gx * .65, 14, 88), sy = clamp(100 - gy * .55, 18, 86);
+        const tx = clamp(gx * .45 + 16, 10, 90), ty = clamp(gy * .55 + 42, 20, 88);
+        glowEl.style.background = [
+          `radial-gradient(92% 78% at ${gx.toFixed(1)}% ${gy.toFixed(1)}%,rgba(${gr | 0},${gg | 0},${gb | 0},${ga.toFixed(3)}),transparent 63%)`,
+          `radial-gradient(74% 66% at ${sx.toFixed(1)}% ${sy.toFixed(1)}%,rgba(115,122,69,.105),transparent 66%)`,
+          `radial-gradient(82% 72% at ${tx.toFixed(1)}% ${ty.toFixed(1)}%,rgba(120,91,163,.095),transparent 68%)`
+        ].join(",");
       }
       if (active !== activeIdx) {
         activeIdx = active;
@@ -582,10 +686,21 @@
     { name: "Suono", sec: "artist", size: "tall" },
     { name: "Capsule", sec: "video_events", size: "half" }
   ];
+  // sector id -> category "soul" (font key + theme-aware colour var). Mirrors flow.js soulOf.
+  function soulOf(sid) {
+    if (sid === "web") return { soul: "web", v: "var(--cat-web)" };
+    if (sid === "branding") return { soul: "graphic", v: "var(--cat-graphic)" };
+    if (sid === "social") return { soul: "social", v: "var(--cat-social)" };
+    if (sid === "podcast") return { soul: "podcast", v: "var(--cat-podcast)" };
+    if (sid === "ai") return { soul: "ai", v: "var(--cat-ai)" };
+    if (sid.indexOf("video") === 0) return { soul: "video", v: "var(--cat-video)" };
+    return { soul: "generic", v: (D.SECTORS[sid] || {}).color || "var(--pink)" };
+  }
   function cardHTML(p, i) {
     const cls = p.size === "wide" ? "card--wide" : p.size === "tall" ? "card--tall" : "card--half";
     const num = String(i + 1).padStart(2, "0");
-    return `<a class="card ${cls}" href="#" data-hot>
+    const s = soulOf(p.sec);
+    return `<a class="card ${cls}" href="#" data-hot data-soul="${s.soul}" style="--sector:${s.v}">
       <span class="card__idx"><b>Atto ${num}</b> · ${p.sec.split("_")[0]}</span>
       <div class="card__img" style="background-image:${GRADS[i % GRADS.length]}"></div>
       <div class="card__wash"></div><div class="card__sweep"></div>
@@ -600,7 +715,7 @@
   function renderTeam() {
     const grid = document.getElementById("teamGrid"); if (!grid) return;
     grid.innerHTML = D.TEAM.map((m, i) => `
-      <a class="mcard" href="member.html?id=${m.id}" data-hot style="--sector:${D.SECTORS[m.sector].color}">
+      <a class="mcard" href="member.html?id=${m.id}" data-hot data-soul="${soulOf(m.sector).soul}" style="--sector:${soulOf(m.sector).v}">
         <div class="mcard__img" style="background-image:${GRADS[i % GRADS.length]}"></div>
         <div class="mcard__wash"></div>
         <span class="mcard__initials">${m.initials}</span>
@@ -615,8 +730,11 @@
     const hero = document.getElementById("memberHero"); if (!hero) return;
     const id = new URLSearchParams(location.search).get("id");
     const m = D.getMember(id) || D.TEAM[0];
+    const s = soulOf(m.sector);
+    hero.dataset.soul = s.soul;
+    hero.style.setProperty("--sector", s.v);
     hero.innerHTML = `
-      <div class="mhero__plate" style="--sector:${D.SECTORS[m.sector].color}">
+      <div class="mhero__plate">
         <div class="mcard__img" style="background-image:${GRADS[0]}"></div>
         <div class="mcard__wash"></div>
         <span class="mcard__initials">${m.initials}</span>
@@ -669,6 +787,7 @@
     initCursor();
     initBackground();
     initMenu();
+    initTheme();
     initKinetic();
     initMarquee();
     initLeadPhotos();

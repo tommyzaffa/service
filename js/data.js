@@ -16,16 +16,16 @@ const CURRENCIES = {
 /* ---- Sectors ---------------------------------------------- */
 /* color = brand accent for the sector (see brief §7.3)        */
 const SECTORS = {
-  branding:        { id: "branding",        color: "#5E7A52", icon: "pen-tool" },
-  web:             { id: "web",             color: "#2E6E6E", icon: "monitor" },
-  social:          { id: "social",          color: "#3A5A8C", icon: "share-2" },
+  branding:        { id: "branding",        color: "#9E4567", icon: "pen-tool" },
+  web:             { id: "web",             color: "#667547", icon: "monitor" },
+  social:          { id: "social",          color: "#785BA3", icon: "share-2" },
   video_events:    { id: "video_events",    color: "#9C3B5C", icon: "video" },
   video_fashion:   { id: "video_fashion",   color: "#9C3B5C", icon: "film" },
   video_corporate: { id: "video_corporate", color: "#9C3B5C", icon: "briefcase" },
   video_commercial:{ id: "video_commercial",color: "#9C3B5C", icon: "megaphone" },
-  podcast:         { id: "podcast",         color: "#A8453B", icon: "mic" },
-  personal:        { id: "personal",        color: "#B0742E", icon: "user" },
-  sport:           { id: "sport",           color: "#99602C", icon: "trophy" },
+  podcast:         { id: "podcast",         color: "#A85A4F", icon: "mic" },
+  personal:        { id: "personal",        color: "#8E5F69", icon: "user" },
+  sport:           { id: "sport",           color: "#737A45", icon: "trophy" },
   artist:          { id: "artist",          color: "#8A6A3E", icon: "music" }
 };
 
@@ -107,17 +107,17 @@ const PACKAGES = {
 /* type = "business" | "private"                               */
 const CATEGORIES = {
   // Business
-  startup:        { id: "startup",        type: "business" },
-  small_business: { id: "small_business", type: "business" },
-  pmi:            { id: "pmi",            type: "business" },
-  corporate:      { id: "corporate",      type: "business" },
+  startup:        { id: "startup",        type: "business", icon: "rocket" },
+  small_business: { id: "small_business", type: "business", icon: "store" },
+  pmi:            { id: "pmi",            type: "business", icon: "factory" },
+  corporate:      { id: "corporate",      type: "business", icon: "landmark" },
   // Private
-  freelancer:     { id: "freelancer",     type: "private" },
-  creator:        { id: "creator",        type: "private" },
-  artist_cat:     { id: "artist_cat",     type: "private" },
-  athlete:        { id: "athlete",        type: "private" },
-  public_figure:  { id: "public_figure",  type: "private" },
-  podcast_cat:    { id: "podcast_cat",    type: "private" }
+  freelancer:     { id: "freelancer",     type: "private",  icon: "laptop" },
+  creator:        { id: "creator",        type: "private",  icon: "camera" },
+  artist_cat:     { id: "artist_cat",     type: "private",  icon: "palette" },
+  athlete:        { id: "athlete",        type: "private",  icon: "trophy" },
+  public_figure:  { id: "public_figure",  type: "private",  icon: "star" },
+  podcast_cat:    { id: "podcast_cat",    type: "private",  icon: "mic" }
 };
 
 /* ---- Matrix: category → sectors shown (brief §5) ---------- */
