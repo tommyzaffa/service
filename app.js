@@ -688,6 +688,7 @@
   ];
   // sector id -> category "soul" (font key + theme-aware colour var). Mirrors flow.js soulOf.
   function soulOf(sid) {
+    if (sid === "director") return { soul: "director", v: "var(--spark)" };
     if (sid === "web") return { soul: "web", v: "var(--cat-web)" };
     if (sid === "branding") return { soul: "graphic", v: "var(--cat-graphic)" };
     if (sid === "social") return { soul: "social", v: "var(--cat-social)" };
@@ -714,17 +715,23 @@
   function memberName(m) { return m.initials[0] + ". " + m.id.charAt(0).toUpperCase() + m.id.slice(1); }
   function renderTeam() {
     const grid = document.getElementById("teamGrid"); if (!grid) return;
-    grid.innerHTML = D.TEAM.map((m, i) => `
-      <a class="mcard" href="member.html?id=${m.id}" data-hot data-soul="${soulOf(m.sector).soul}" style="--sector:${soulOf(m.sector).v}">
+    grid.innerHTML = D.TEAM.map((m, i) => {
+      const s = soulOf(m.sector);
+      const dir = m.director ? " mcard--director" : "";
+      const badge = m.director ? `<span class="mcard__badge">${t("about.lead")}</span>` : "";
+      return `
+      <a class="mcard${dir}" href="member.html?id=${m.id}" data-hot data-soul="${s.soul}" style="--sector:${s.v}">
         <div class="mcard__img" style="background-image:${GRADS[i % GRADS.length]}"></div>
         <div class="mcard__wash"></div>
+        ${badge}
         <span class="mcard__initials">${m.initials}</span>
         <div class="mcard__meta">
           <div class="mcard__name">${memberName(m)}</div>
           <span class="mcard__role">${t("about.role." + m.id)}</span>
           <span class="mcard__view">${t("member.view")}</span>
         </div>
-      </a>`).join("");
+      </a>`;
+    }).join("");
   }
   function renderMember() {
     const hero = document.getElementById("memberHero"); if (!hero) return;
@@ -742,12 +749,18 @@
       <div class="mhero__body">
         <span class="mhero__role">${t("about.role." + m.id)}</span>
         <h1 class="mhero__name">${memberName(m)}</h1>
-        <p class="mhero__intro">${t("member.intro")}</p>
+        <p class="mhero__intro">${t(m.director ? "member.intro.director" : "member.intro")}</p>
         <a class="btn btn--ghost mback" href="about.html" data-hot><span>← ${t("member.back")}</span></a>
       </div>`;
     const work = document.getElementById("memberWork");
-    if (work) work.innerHTML = m.work.map((sid, i) =>
-      cardHTML({ name: t("sec." + sid + ".name"), sec: sid, size: i === 0 ? "wide" : "half" }, i)).join("");
+    const workSec = work ? work.closest(".work") : null;
+    if (m.director) {
+      if (workSec) workSec.style.display = "none";
+    } else if (work) {
+      if (workSec) workSec.style.display = "";
+      work.innerHTML = m.work.map((sid, i) =>
+        cardHTML({ name: t("sec." + sid + ".name"), sec: sid, size: i === 0 ? "wide" : "half" }, i)).join("");
+    }
   }
 
   /* ============ wizard (reuses ATTO_FLOW + ATTO_CONFIG) ============ */

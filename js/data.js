@@ -158,6 +158,7 @@ const SERVICES = [
 
 /* ---- Team (brief §9) -------------------------------------- */
 const TEAM = [
+  { id: "poloni",       initials: "FP", sector: "director", director: true, work: [] },
   { id: "macchi",       initials: "DM", sector: "branding", work: ["branding", "video_corporate", "web", "podcast"] },
   { id: "cirrincione",  initials: "DC", sector: "web",      work: ["web", "video_commercial", "social", "artist"] },
   { id: "benedetti",    initials: "FB", sector: "social",   work: ["social", "video_fashion", "personal", "podcast"] },

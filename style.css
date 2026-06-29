@@ -536,6 +536,12 @@ body.nav-open .overlay__foot{opacity:1}
   opacity:0;transform:translateY(8px);transition:.5s var(--ease)}
 .mcard:hover .mcard__view{opacity:1;transform:none}
 .mcard__view::after{content:"→";color:var(--pink)}
+/* Director — coordinates the studio, no services: same shape, warm accent */
+.mcard--director{border:1px solid var(--spark)}
+.mcard--director .mcard__wash{opacity:.5}
+.mcard__badge{position:absolute;top:16px;left:16px;z-index:4;font-family:var(--mono);
+  font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--bg);
+  background:var(--spark);padding:5px 11px;border-radius:999px}
 
 /* =====================  MEMBER PAGE  ===================== */
 .mhero{padding:140px clamp(20px,4vw,52px) 60px;
