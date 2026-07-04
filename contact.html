@@ -3,146 +3,135 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Atto — Contatti</title>
-<meta name="description" content="Raccontaci il tuo progetto. Rispondiamo in fretta, nella tua lingua." />
+<title>Contatti — Atto</title>
+<meta name="description" content="Raccontaci il progetto: rispondiamo entro un giorno lavorativo, nella tua lingua." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Fraunces:opsz,wght@9..144,400..600&family=Space+Grotesk:wght@400..700&family=JetBrains+Mono:wght@400;500&family=Anton&family=Quicksand:wght@400..700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..620;1,9..144,400..620&family=Geist:wght@400..700&display=swap" rel="stylesheet" />
 <link rel="icon" href="favicon.ico" sizes="any" />
 <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png" />
-<link rel="icon" type="image/png" sizes="48x48" href="img/favicon-48.png" />
-<link rel="icon" type="image/png" sizes="96x96" href="img/favicon-96.png" />
 <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png" />
-<meta property="og:type" content="website" />
-<meta property="og:site_name" content="Atto" />
-<meta property="og:locale" content="it_CH" />
-<meta property="og:title" content="Atto — Contatti" />
-<meta property="og:description" content="Raccontaci il tuo progetto. Rispondiamo in fretta, nella tua lingua." />
-<meta property="og:image" content="og-cover.jpg" />
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Atto — Contatti" />
-<meta name="twitter:description" content="Raccontaci il tuo progetto. Rispondiamo in fretta, nella tua lingua." />
-<meta name="twitter:image" content="og-cover.jpg" />
 <link rel="stylesheet" href="style.css" />
 </head>
-<body data-bg="waves">
-<canvas id="aurora"></canvas>
-<div class="veil"></div>
-<div id="cursor"></div>
-<div id="cursorDot"></div>
+<body>
 
-<div class="overlay" id="overlay" aria-hidden="true">
-  <button class="overlay__close" id="menuClose" type="button" aria-label="Chiudi menu"></button>
-  <nav class="overlay__nav">
-    <a href="index.html" data-hot><span><i class="overlay__num">01</i><span data-i18n="cc.nav.home">Home</span></span></a>
-    <a href="work.html" data-hot><span><i class="overlay__num">02</i><span data-i18n="nav.work">Lavori</span></span></a>
-    <a href="about.html" data-hot><span><i class="overlay__num">03</i><span data-i18n="cc.nav.studio">Studio</span></span></a>
-    <a href="contact.html" aria-current="page" data-hot><span><i class="overlay__num">04</i><span data-i18n="nav.contact">Contatti</span></span></a>
-  </nav>
-  <a class="overlay__start" href="start.html" data-hot>
-    <span class="overlay__start__txt"><i class="overlay__start__k" data-i18n="nav.start">Inizia</i><i class="overlay__start__d" data-i18n="cc.lead.build">Costruisci il progetto</i></span>
-    <span class="overlay__start__arrow" aria-hidden="true">→</span>
-  </a>
-  <div class="overlay__foot">
-    <div class="overlay__meta"><span>hello@atto.studio</span><span>Lugano · Zürich</span><span>© <span id="year"></span> Atto</span></div>
-    <div class="overlay__lang" role="group" aria-label="Language">
-      <button type="button" data-lang="it">IT</button>
-      <button type="button" data-lang="en">EN</button>
-      <button type="button" data-lang="de">DE</button>
-      <button type="button" data-lang="fr">FR</button>
+<header class="site-header">
+  <div class="header-in">
+    <a class="back-home" href="index.html"><span aria-hidden="true">←</span>&nbsp;<span data-i18n="nav.backhome">Torna alla home</span></a>
+    <div class="header-tools">
+      <div class="lang-switch" aria-label="Lingua">
+        <button data-lang="it">IT</button><span class="sep">·</span>
+        <button data-lang="en">EN</button><span class="sep">·</span>
+        <button data-lang="de">DE</button><span class="sep">·</span>
+        <button data-lang="fr">FR</button>
+      </div>
     </div>
   </div>
-</div>
+</header>
 
-<div class="wrap">
-  <header class="bar">
-    <a href="index.html" class="brand">atto<i></i></a>
-    <div class="bar__right">
-      <div class="bar__lang" role="group" aria-label="Language">
-        <button type="button" data-lang="it">IT</button><button type="button" data-lang="en">EN</button><button type="button" data-lang="de">DE</button><button type="button" data-lang="fr">FR</button>
-      </div>
-      <a class="bar__cta" href="start.html" data-hot><span data-i18n="nav.start">Inizia</span></a>
-      <button class="menu-btn" id="menuBtn" data-hot aria-label="Apri menu" aria-controls="overlay" aria-expanded="false"><span></span><span></span></button>
+<main>
+
+  <section class="page-hero">
+    <div class="container">
+      <p class="kicker" data-i18n="contact.tag">Contatti</p>
+      <h1 data-i18n="contact.title">Raccontaci il progetto.</h1>
+      <p class="lede" data-i18n="contact.sub">Rispondiamo in fretta, nella tua lingua.</p>
     </div>
-  </header>
-
-  <section class="phero" style="min-height:auto;padding-bottom:30px">
-    <p class="phero__tag"><span data-i18n="cc.contact.tag">Mettiti in contatto</span></p>
-    <h1 class="phero__title" data-i18n-html="cc.contact.title"></h1>
-    <p class="phero__sub" data-i18n="cc.contact.sub"></p>
   </section>
 
-  <section class="cwrap">
-    <form class="cform" id="contactForm" action="https://formspree.io/f/[FORMSPREE_FORM_ID]" method="POST" novalidate>
-      <div class="field-row">
-        <div class="field">
-          <label for="f-name" data-i18n="form.name">Nome completo</label>
-          <input id="f-name" name="name" type="text" autocomplete="name" />
+  <section class="section">
+    <div class="container" style="max-width:760px;">
+      <form data-contact-form action="https://formspree.io/f/[FORMSPREE_FORM_ID]" method="POST">
+        <div class="form-grid">
+          <div class="field">
+            <label for="f-name" data-i18n="form.name">Nome e cognome</label>
+            <input id="f-name" name="name" type="text" required autocomplete="name" />
+          </div>
+          <div class="field">
+            <label for="f-email" data-i18n="form.email">Email</label>
+            <input id="f-email" name="email" type="email" required autocomplete="email" />
+          </div>
+          <div class="field">
+            <label for="f-phone" data-i18n="form.phone">Telefono</label>
+            <input id="f-phone" name="phone" type="tel" autocomplete="tel" />
+          </div>
+          <div class="field">
+            <label for="f-role" data-i18n="form.role">Chi sei? (azienda, privato, ente…)</label>
+            <select id="f-role" name="role">
+              <option value="azienda" data-i18n="form.role.company">Azienda</option>
+              <option value="privato" data-i18n="form.role.private">Privato / libero professionista</option>
+              <option value="ente" data-i18n="form.role.institution">Ente / istituzione</option>
+              <option value="atleta" data-i18n="form.role.athlete">Atleta / team sportivo</option>
+              <option value="artista" data-i18n="form.role.artist">Artista / musicista</option>
+              <option value="altro" data-i18n="form.role.other">Altro</option>
+            </select>
+          </div>
+          <div class="field full">
+            <label for="f-company" data-i18n="form.company">Azienda / progetto</label>
+            <input id="f-company" name="company" type="text" autocomplete="organization" />
+          </div>
+          <div class="field full">
+            <label for="f-message" data-i18n="form.message">Note sul progetto</label>
+            <textarea id="f-message" name="message" required></textarea>
+          </div>
+          <div class="field full form-consent">
+            <input id="f-privacy" type="checkbox" required />
+            <label for="f-privacy" data-i18n="form.privacy" style="text-transform:none;letter-spacing:0;font-size:.8rem;">Accetto la privacy policy.</label>
+          </div>
         </div>
-        <div class="field">
-          <label for="f-email" data-i18n="form.email">Email</label>
-          <input id="f-email" name="email" type="email" autocomplete="email" required />
-        </div>
-      </div>
-      <div class="field-row">
-        <div class="field">
-          <label for="f-phone" data-i18n="form.phone">Telefono</label>
-          <input id="f-phone" name="phone" type="tel" autocomplete="tel" />
-        </div>
-        <div class="field">
-          <label for="f-company" data-i18n="form.company">Azienda / progetto</label>
-          <input id="f-company" name="company" type="text" autocomplete="organization" />
-        </div>
-      </div>
-      <div class="field">
-        <label for="f-message" data-i18n="form.message">Raccontaci di più</label>
-        <textarea id="f-message" name="message"></textarea>
-      </div>
-      <div class="field">
-        <label for="f-lang" data-i18n="form.langpref">Lingua preferita</label>
-        <select id="f-lang" name="preferred_language">
-          <option value="Italiano">Italiano</option>
-          <option value="English">English</option>
-          <option value="Deutsch">Deutsch</option>
-          <option value="Français">Français</option>
-        </select>
-      </div>
-      <input type="hidden" name="_subject" value="New message from Atto site" />
-      <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px" aria-hidden="true" />
-      <label class="check">
-        <input type="checkbox" id="f-privacy" name="privacy_consent" value="yes" required />
-        <span data-i18n="form.privacy">Accetto la privacy policy.</span>
-      </label>
-      <button class="btn btn--fill" type="submit" id="formSubmit"><span data-i18n="form.submit">Invia richiesta</span></button>
-      <div class="form-status" id="formStatus" role="status"></div>
-    </form>
-
-    <aside class="caside">
-      <h3 data-i18n="nav.contact">Contatti</h3>
-      <a class="cinfo__row" href="mailto:hello@atto.studio">
-        <span class="cinfo__label">Email</span>
-        <span class="cinfo__value">hello@atto.studio</span>
-      </a>
-      <div class="cinfo__row">
-        <span class="cinfo__label" data-i18n="nav.language">Lingua</span>
-        <span class="cinfo__value">IT · EN · DE · FR</span>
-      </div>
-      <div class="cinfo__row">
-        <span class="cinfo__label">Studio</span>
-        <span class="cinfo__value">Lugano · Zürich, CH</span>
-      </div>
-    </aside>
+        <input type="hidden" name="_subject" value="Contatto dal sito — Atto" />
+        <input type="hidden" name="lang" value="it" data-hidden-lang />
+        <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off" />
+        <p style="margin-top:1.4rem;">
+          <button class="btn btn-pine" type="submit" data-i18n="form.submit">Invia richiesta</button>
+        </p>
+        <p class="form-status" data-form-status aria-live="polite"></p>
+      </form>
+    </div>
   </section>
 
-  <footer class="foot">
-    <span>© <span id="year"></span> Atto Studio</span>
-    <span>Lugano · Zürich</span>
-    <span>hello@atto.studio</span>
-  </footer>
-</div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-back">
+    <div class="container">
+      <a class="back-home" href="index.html"><span aria-hidden="true">←</span>&nbsp;<span data-i18n="nav.backhome">Torna alla home</span></a>
+    </div>
+  </div>
+  <div class="footer-base">
+    <div class="container">
+      <span>© <span data-year>2026</span> Atto — <span data-i18n="foot.rights">Tutti i diritti riservati.</span></span>
+      <span>Lugano &amp; Zürich</span>
+    </div>
+  </div>
+</footer>
 
 <script src="js/data.js"></script>
 <script src="js/i18n.js"></script>
 <script src="app.js"></script>
+<script>
+(function () {
+  var form = document.querySelector("[data-contact-form]");
+  var status = document.querySelector("[data-form-status]");
+  var I = window.ATTO_I18N;
+  if (!form) return;
+  var langField = form.querySelector("[data-hidden-lang]");
+  form.addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    if (langField && I) langField.value = I.getLang();
+    if (status) { status.textContent = "…"; status.className = "form-status"; }
+    fetch(form.action, { method: "POST", body: new FormData(form), headers: { Accept: "application/json" } })
+      .then(function (res) {
+        if (res.ok) {
+          if (status) { status.textContent = I ? I.t("form.success") : "Inviato."; status.className = "form-status ok"; }
+          form.reset();
+        } else { throw new Error("send failed"); }
+      })
+      .catch(function () {
+        if (status) { status.textContent = I ? I.t("form.error") : "Errore."; status.className = "form-status err"; }
+      });
+  });
+})();
+</script>
 </body>
 </html>

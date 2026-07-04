@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Servizio — Atto</title>
+<meta name="description" content="Componi il tuo preventivo: scegli la linea, il livello e i complementi." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..620;1,9..144,400..620&family=Geist:wght@400..700&display=swap" rel="stylesheet" />
+<link rel="icon" href="favicon.ico" sizes="any" />
+<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png" />
+<link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-in">
+    <a class="back-home" href="index.html"><span aria-hidden="true">←</span>&nbsp;<span data-i18n="nav.backhome">Torna alla home</span></a>
+    <div class="header-tools">
+      <div class="currency-switch" aria-label="Valuta">
+        <button data-currency="CHF">CHF</button><span class="sep">·</span>
+        <button data-currency="EUR">EUR</button>
+      </div>
+      <div class="lang-switch" aria-label="Lingua">
+        <button data-lang="it">IT</button><span class="sep">·</span>
+        <button data-lang="en">EN</button><span class="sep">·</span>
+        <button data-lang="de">DE</button><span class="sep">·</span>
+        <button data-lang="fr">FR</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <section class="service-hero">
+    <div class="container">
+      <p class="kicker anim-rise" style="--d:0s"><span data-i18n="nav.services">Servizi</span></p>
+      <h1 class="anim-rise" style="--d:.08s" data-service-name>—</h1>
+      <p class="lede anim-rise" style="--d:.16s" data-service-tagline></p>
+    </div>
+  </section>
+
+  <div class="container">
+    <div class="flow-steps" data-flow-steps>
+      <span data-step-ind="line" data-i18n="srv.step.line">La linea</span>
+      <span data-step-ind="tier" data-i18n="srv.step.tier">Il livello</span>
+      <span data-step-ind="addons" data-i18n="srv.step.addons">I complementi</span>
+      <span data-step-ind="summary" data-i18n="srv.step.summary">Il riepilogo</span>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="service-layout">
+
+      <div class="service-main">
+
+        <!-- STEP 1 · linea -->
+        <section class="step-block" id="step-line" data-block="line">
+          <p class="kicker" data-i18n="srv.step.line">La linea</p>
+          <p class="step-hint" data-i18n="srv.line.hint">Scegli l'ambito che ti serve.</p>
+          <div class="line-cards" data-line-cards></div>
+        </section>
+
+        <!-- STEP 2 · tier -->
+        <section class="step-block" id="step-tier" data-block="tier">
+          <p class="kicker" data-i18n="srv.step.tier">Il livello</p>
+          <p class="step-hint" data-i18n="srv.tier.hint">Un livello alla volta: ogni tier include il precedente.</p>
+          <div class="tier-cards" data-tier-cards></div>
+        </section>
+
+        <!-- STEP 3 · add-on -->
+        <section class="step-block" id="step-addons" data-block="addons">
+          <p class="kicker" data-i18n="srv.step.addons">I complementi</p>
+          <p class="step-hint" data-i18n="srv.addons.hint">Solo i complementi compatibili con il pacchetto scelto. Apri una famiglia per vedere le voci.</p>
+          <div class="addon-families" data-addon-families></div>
+        </section>
+
+        <!-- STEP 4 · form -->
+        <section class="step-block quote-form-block" id="step-form">
+          <p class="kicker" data-i18n="form.title">Parliamone</p>
+          <p class="step-hint" data-i18n="form.sub">Lascia i tuoi recapiti: rispondiamo entro un giorno lavorativo.</p>
+          <form data-quote-form action="https://formspree.io/f/[FORMSPREE_FORM_ID]" method="POST">
+            <div class="form-grid">
+              <div class="field">
+                <label for="f-name" data-i18n="form.name">Nome e cognome</label>
+                <input id="f-name" name="name" type="text" required autocomplete="name" />
+              </div>
+              <div class="field">
+                <label for="f-email" data-i18n="form.email">Email</label>
+                <input id="f-email" name="email" type="email" required autocomplete="email" />
+              </div>
+              <div class="field">
+                <label for="f-phone" data-i18n="form.phone">Telefono</label>
+                <input id="f-phone" name="phone" type="tel" autocomplete="tel" />
+              </div>
+              <div class="field">
+                <label for="f-role" data-i18n="form.role">Chi sei? (azienda, privato, ente…)</label>
+                <select id="f-role" name="role">
+                  <option value="azienda" data-i18n="form.role.company">Azienda</option>
+                  <option value="privato" data-i18n="form.role.private">Privato / libero professionista</option>
+                  <option value="ente" data-i18n="form.role.institution">Ente / istituzione</option>
+                  <option value="atleta" data-i18n="form.role.athlete">Atleta / team sportivo</option>
+                  <option value="artista" data-i18n="form.role.artist">Artista / musicista</option>
+                  <option value="altro" data-i18n="form.role.other">Altro</option>
+                </select>
+              </div>
+              <div class="field full">
+                <label for="f-company" data-i18n="form.company">Azienda / progetto</label>
+                <input id="f-company" name="company" type="text" autocomplete="organization" />
+              </div>
+              <div class="field full">
+                <label for="f-message" data-i18n="form.message">Note sul progetto</label>
+                <textarea id="f-message" name="message"></textarea>
+              </div>
+              <div class="field full form-consent">
+                <input id="f-privacy" type="checkbox" required />
+                <label for="f-privacy" data-i18n="form.privacy" style="text-transform:none;letter-spacing:0;font-size:.8rem;">Accetto la privacy policy.</label>
+              </div>
+            </div>
+            <input type="hidden" name="_subject" value="Richiesta preventivo — Atto" />
+            <input type="hidden" name="lang" value="it" data-hidden-lang />
+            <input type="hidden" name="servizio" value="" data-hidden-service />
+            <input type="hidden" name="pacchetto" value="" data-hidden-package />
+            <input type="hidden" name="valuta" value="CHF" data-hidden-currency />
+            <textarea name="riepilogo" hidden data-hidden-summary></textarea>
+            <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off" />
+            <p style="margin-top:1.4rem;">
+              <button class="btn btn-pine" type="submit" data-i18n="form.submit">Invia richiesta</button>
+            </p>
+            <p class="form-status" data-form-status aria-live="polite"></p>
+          </form>
+        </section>
+
+      </div>
+
+      <!-- RIEPILOGO STICKY -->
+      <aside class="quote-panel" data-quote-panel>
+        <h3 data-i18n="quote.summary">Il tuo preventivo</h3>
+        <div class="quote-rows" data-quote-rows>
+          <p class="quote-empty" data-i18n="quote.empty">Scegli un pacchetto per iniziare.</p>
+        </div>
+        <p class="quote-estimate" data-i18n="quote.estimate">Stima indicativa: il preventivo definitivo viene confermato insieme.</p>
+        <a class="btn btn-primary" href="#step-form" data-i18n="quote.send">Invia la richiesta</a>
+      </aside>
+
+    </div>
+  </div>
+
+</main>
+
+<footer class="site-footer">
+  <div class="footer-back">
+    <div class="container">
+      <a class="back-home" href="index.html"><span aria-hidden="true">←</span>&nbsp;<span data-i18n="nav.backhome">Torna alla home</span></a>
+    </div>
+  </div>
+  <div class="footer-base">
+    <div class="container">
+      <span>© <span data-year>2026</span> Atto — <span data-i18n="foot.rights">Tutti i diritti riservati.</span></span>
+      <span>Lugano &amp; Zürich</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/data.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/catalog-i18n.js"></script>
+<script src="app.js"></script>
+<script src="js/service.js"></script>
+</body>
+</html>

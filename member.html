@@ -1,87 +1,15 @@
 <!DOCTYPE html>
+<!-- Pagina deprecata (redesign 2026-07): le schede membro sono state
+     assorbite dalla pagina Studio. Questa pagina reindirizza lì. -->
 <html lang="it">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Atto — Profilo</title>
-<meta name="description" content="Profilo e lavori selezionati del membro del team." />
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Fraunces:opsz,wght@9..144,400..600&family=Space+Grotesk:wght@400..700&family=JetBrains+Mono:wght@400;500&family=Anton&family=Quicksand:wght@400..700&display=swap" rel="stylesheet" />
-<link rel="icon" href="favicon.ico" sizes="any" />
-<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png" />
-<link rel="icon" type="image/png" sizes="48x48" href="img/favicon-48.png" />
-<link rel="icon" type="image/png" sizes="96x96" href="img/favicon-96.png" />
-<link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png" />
-<meta property="og:type" content="profile" />
-<meta property="og:site_name" content="Atto" />
-<meta property="og:locale" content="it_CH" />
-<meta property="og:title" content="Atto — Profilo" />
-<meta property="og:description" content="Profilo e lavori selezionati del membro del team." />
-<meta property="og:image" content="og-cover.jpg" />
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Atto — Profilo" />
-<meta name="twitter:description" content="Profilo e lavori selezionati del membro del team." />
-<meta name="twitter:image" content="og-cover.jpg" />
-<link rel="stylesheet" href="style.css" />
+<meta http-equiv="refresh" content="0; url=about.html" />
+<title>Studio — Atto</title>
+<link rel="canonical" href="about.html" />
+<script>location.replace("about.html");</script>
 </head>
-<body data-bg="orbs">
-<canvas id="aurora"></canvas>
-<div class="veil"></div>
-<div id="cursor"></div>
-<div id="cursorDot"></div>
-
-<div class="overlay" id="overlay" aria-hidden="true">
-  <button class="overlay__close" id="menuClose" type="button" aria-label="Chiudi menu"></button>
-  <nav class="overlay__nav">
-    <a href="index.html" data-hot><span><i class="overlay__num">01</i><span data-i18n="cc.nav.home">Home</span></span></a>
-    <a href="work.html" data-hot><span><i class="overlay__num">02</i><span data-i18n="nav.work">Lavori</span></span></a>
-    <a href="about.html" aria-current="page" data-hot><span><i class="overlay__num">03</i><span data-i18n="cc.nav.studio">Studio</span></span></a>
-    <a href="contact.html" data-hot><span><i class="overlay__num">04</i><span data-i18n="nav.contact">Contatti</span></span></a>
-  </nav>
-  <a class="overlay__start" href="start.html" data-hot>
-    <span class="overlay__start__txt"><i class="overlay__start__k" data-i18n="nav.start">Inizia</i><i class="overlay__start__d" data-i18n="cc.lead.build">Costruisci il progetto</i></span>
-    <span class="overlay__start__arrow" aria-hidden="true">→</span>
-  </a>
-  <div class="overlay__foot">
-    <div class="overlay__meta"><span>hello@atto.studio</span><span>Lugano · Zürich</span><span>© <span id="year"></span> Atto</span></div>
-    <div class="overlay__lang" role="group" aria-label="Language">
-      <button type="button" data-lang="it">IT</button>
-      <button type="button" data-lang="en">EN</button>
-      <button type="button" data-lang="de">DE</button>
-      <button type="button" data-lang="fr">FR</button>
-    </div>
-  </div>
-</div>
-
-<div class="wrap">
-  <header class="bar">
-    <a href="index.html" class="brand">atto<i></i></a>
-    <div class="bar__right">
-      <div class="bar__lang" role="group" aria-label="Language">
-        <button type="button" data-lang="it">IT</button><button type="button" data-lang="en">EN</button><button type="button" data-lang="de">DE</button><button type="button" data-lang="fr">FR</button>
-      </div>
-      <a class="bar__cta" href="start.html" data-hot><span data-i18n="nav.start">Inizia</span></a>
-      <button class="menu-btn" id="menuBtn" data-hot aria-label="Apri menu" aria-controls="overlay" aria-expanded="false"><span></span><span></span></button>
-    </div>
-  </header>
-
-  <section class="mhero" id="memberHero"></section>
-
-  <section class="work">
-    <p class="phero__tag" style="margin-bottom:34px"><span data-i18n="member.work.kicker">Lavori selezionati</span></p>
-    <div class="grid" id="memberWork"></div>
-  </section>
-
-  <footer class="foot">
-    <span>© <span id="year"></span> Atto Studio</span>
-    <span>Lugano · Zürich</span>
-    <span>hello@atto.studio</span>
-  </footer>
-</div>
-
-<script src="js/data.js"></script>
-<script src="js/i18n.js"></script>
-<script src="app.js"></script>
+<body>
+<p><a href="about.html">Vai alla pagina Studio →</a></p>
 </body>
 </html>

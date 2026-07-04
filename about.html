@@ -3,91 +3,84 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Atto — Studio</title>
-<meta name="description" content="Un piccolo collettivo creativo in Svizzera. Conosci il team." />
+<title>Studio — Atto</title>
+<meta name="description" content="Atto è uno studio creativo con base tra Lugano e Zürich. Branding, web, video e contenuti." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Fraunces:opsz,wght@9..144,400..600&family=Space+Grotesk:wght@400..700&family=JetBrains+Mono:wght@400;500&family=Anton&family=Quicksand:wght@400..700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..620;1,9..144,400..620&family=Geist:wght@400..700&display=swap" rel="stylesheet" />
 <link rel="icon" href="favicon.ico" sizes="any" />
 <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png" />
-<link rel="icon" type="image/png" sizes="48x48" href="img/favicon-48.png" />
-<link rel="icon" type="image/png" sizes="96x96" href="img/favicon-96.png" />
 <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png" />
-<meta property="og:type" content="website" />
-<meta property="og:site_name" content="Atto" />
-<meta property="og:locale" content="it_CH" />
-<meta property="og:title" content="Atto — Studio" />
-<meta property="og:description" content="Un piccolo collettivo creativo in Svizzera. Conosci il team." />
-<meta property="og:image" content="og-cover.jpg" />
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Atto — Studio" />
-<meta name="twitter:description" content="Un piccolo collettivo creativo in Svizzera. Conosci il team." />
-<meta name="twitter:image" content="og-cover.jpg" />
 <link rel="stylesheet" href="style.css" />
 </head>
-<body data-bg="orbs">
-<canvas id="aurora"></canvas>
-<div class="veil"></div>
-<div id="cursor"></div>
-<div id="cursorDot"></div>
+<body>
 
-<div class="overlay" id="overlay" aria-hidden="true">
-  <button class="overlay__close" id="menuClose" type="button" aria-label="Chiudi menu"></button>
-  <nav class="overlay__nav">
-    <a href="index.html" data-hot><span><i class="overlay__num">01</i><span data-i18n="cc.nav.home">Home</span></span></a>
-    <a href="work.html" data-hot><span><i class="overlay__num">02</i><span data-i18n="nav.work">Lavori</span></span></a>
-    <a href="about.html" aria-current="page" data-hot><span><i class="overlay__num">03</i><span data-i18n="cc.nav.studio">Studio</span></span></a>
-    <a href="contact.html" data-hot><span><i class="overlay__num">04</i><span data-i18n="nav.contact">Contatti</span></span></a>
-  </nav>
-  <a class="overlay__start" href="start.html" data-hot>
-    <span class="overlay__start__txt"><i class="overlay__start__k" data-i18n="nav.start">Inizia</i><i class="overlay__start__d" data-i18n="cc.lead.build">Costruisci il progetto</i></span>
-    <span class="overlay__start__arrow" aria-hidden="true">→</span>
-  </a>
-  <div class="overlay__foot">
-    <div class="overlay__meta"><span>hello@atto.studio</span><span>Lugano · Zürich</span><span>© <span id="year"></span> Atto</span></div>
-    <div class="overlay__lang" role="group" aria-label="Language">
-      <button type="button" data-lang="it">IT</button>
-      <button type="button" data-lang="en">EN</button>
-      <button type="button" data-lang="de">DE</button>
-      <button type="button" data-lang="fr">FR</button>
+<header class="site-header">
+  <div class="header-in">
+    <a class="back-home" href="index.html"><span aria-hidden="true">←</span>&nbsp;<span data-i18n="nav.backhome">Torna alla home</span></a>
+    <div class="header-tools">
+      <div class="lang-switch" aria-label="Lingua">
+        <button data-lang="it">IT</button><span class="sep">·</span>
+        <button data-lang="en">EN</button><span class="sep">·</span>
+        <button data-lang="de">DE</button><span class="sep">·</span>
+        <button data-lang="fr">FR</button>
+      </div>
     </div>
   </div>
-</div>
+</header>
 
-<div class="wrap">
-  <header class="bar">
-    <a href="index.html" class="brand">atto<i></i></a>
-    <div class="bar__right">
-      <div class="bar__lang" role="group" aria-label="Language">
-        <button type="button" data-lang="it">IT</button><button type="button" data-lang="en">EN</button><button type="button" data-lang="de">DE</button><button type="button" data-lang="fr">FR</button>
-      </div>
-      <a class="bar__cta" href="start.html" data-hot><span data-i18n="nav.start">Inizia</span></a>
-      <button class="menu-btn" id="menuBtn" data-hot aria-label="Apri menu" aria-controls="overlay" aria-expanded="false"><span></span><span></span></button>
+<main>
+
+  <section class="page-hero">
+    <div class="container">
+      <p class="kicker" data-i18n="about.tag">Studio</p>
+      <h1 data-i18n-html="about.title">Sobri per scelta,<br>precisi per abitudine.</h1>
     </div>
-  </header>
-
-  <section class="phero">
-    <p class="phero__tag"><span data-i18n="cc.about.tag">Lo studio</span></p>
-    <h1 class="phero__title" data-i18n-html="cc.about.title"></h1>
-    <p class="phero__sub" data-i18n="about.body"></p>
   </section>
 
-  <section class="team" id="teamGrid"></section>
-
-  <section class="cta">
-    <h2><span data-i18n="cc.cta.1">Iniziamo</span><br><span data-i18n-html="cc.cta.2"></span></h2>
-    <a class="cta__btn" href="start.html" data-hot><span data-i18n="cc.cta.btn">Costruisci il progetto →</span></a>
+  <section class="section">
+    <div class="container prose reveal">
+      <p data-i18n="about.txt1">Atto è uno studio creativo con base tra Lugano e Zürich. Lavoriamo su branding, web, video e contenuti con un principio semplice: ogni dettaglio conta.</p>
+      <p data-i18n="about.txt2">Crediamo in un'eleganza discreta — quella che non ha bisogno di alzare la voce. Affidabilità, cura e visione: il resto è esecuzione.</p>
+    </div>
   </section>
 
-  <footer class="foot">
-    <span>© <span id="year"></span> Atto Studio</span>
-    <span>Lugano · Zürich</span>
-    <span>hello@atto.studio</span>
-  </footer>
-</div>
+  <section class="section">
+    <div class="container">
+      <div class="section-head reveal">
+        <p class="kicker" data-i18n="about.team">Il team</p>
+      </div>
+      <div class="team-grid" data-team-grid></div>
+    </div>
+  </section>
+
+  <section class="section band-dark">
+    <div class="container reveal">
+      <p class="kicker" data-i18n="contact.tag">Contatti</p>
+      <h2 data-i18n="contact.title">Raccontaci il progetto.</h2>
+      <p style="margin-top:1.8rem;"><a class="btn" href="contact.html" data-i18n="nav.quote">Richiedi un preventivo</a></p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="footer-back">
+    <div class="container">
+      <a class="back-home" href="index.html"><span aria-hidden="true">←</span>&nbsp;<span data-i18n="nav.backhome">Torna alla home</span></a>
+    </div>
+  </div>
+  <div class="footer-base">
+    <div class="container">
+      <span>© <span data-year>2026</span> Atto — <span data-i18n="foot.rights">Tutti i diritti riservati.</span></span>
+      <span>Lugano &amp; Zürich</span>
+    </div>
+  </div>
+</footer>
 
 <script src="js/data.js"></script>
 <script src="js/i18n.js"></script>
+<script src="js/catalog-i18n.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
