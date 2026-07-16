@@ -156,10 +156,18 @@ hr{ border:0; border-top:1px solid var(--line); margin:2rem 0; }
   .nav-svc[aria-current="page"]{ background:var(--pine-soft); }
 }
 @media (max-width:560px){
-  .header-in{ height:58px; }
-  .header-tools{ gap:8px; }
-  .services-nav{ padding-right:8px; }
-  .lang-switch button,.currency-switch button{ padding:4px 4px; }
+  .header-in{ height:58px; gap:8px; }
+  .brand{ flex-shrink:0; }
+  .header-tools{ gap:6px; flex-shrink:0; }
+  .services-nav{ padding-right:0; }
+  .nav-toggle{ padding:5px 8px; font-size:.64rem; letter-spacing:.05em; gap:.35em; }
+  .lang-switch button,.currency-switch button{ padding:4px 3px; font-size:.72rem; }
+  .lang-switch .sep,.currency-switch .sep{ display:none; }
+  /* tendina agganciata sotto l'header, a tutta larghezza: mai fuori schermo */
+  .nav-links{
+    position:fixed; top:70px; left:var(--gutter); right:var(--gutter);
+    min-width:0; max-height:calc(100svh - 90px); overflow:auto;
+  }
 }
 
 /* lingua e valuta */
@@ -863,6 +871,14 @@ section[id]{ scroll-margin-top:80px; }
     color:var(--ink);
   }
   .hero-stage .stage-label{ display:none; } /* il nome lo dice la didascalia */
+}
+/* respiro hero su mobile: tutto un filo più in alto e più compatto */
+@media (max-width:640px){
+  .panel{ padding:64px 0 96px; }
+  .home-hero .home-brandmark{ margin-bottom:.14em; }
+  .home-hero .hero-loop{ margin-top:22px; }
+  .hero-loop-caption{ margin-top:12px; }
+  .home-hero .scroll-hint{ margin-top:26px; }
 }
 
 .scroll-hint{
