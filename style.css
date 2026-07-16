@@ -160,7 +160,12 @@ hr{ border:0; border-top:1px solid var(--line); margin:2rem 0; }
   .brand{ flex-shrink:0; }
   .header-tools{ gap:6px; flex-shrink:0; }
   .services-nav{ padding-right:0; }
-  .nav-toggle{ padding:5px 8px; font-size:.64rem; letter-spacing:.05em; gap:.35em; }
+  /* icona menu fissa: la parola cambia con la lingua (Servizi/Dienstleistungen…)
+     e sfonda l'header, quindi sotto i 560px si mostra solo ☰ */
+  .nav-toggle{ padding:6px 10px; font-size:.95rem; line-height:1; letter-spacing:0; gap:0; }
+  .nav-toggle span:not(.nav-caret){ display:none; }
+  .nav-toggle::before{ content:"☰"; }
+  .nav-toggle .nav-caret{ display:none; }
   .lang-switch button,.currency-switch button{ padding:4px 3px; font-size:.72rem; }
   .lang-switch .sep,.currency-switch .sep{ display:none; }
   /* tendina agganciata sotto l'header, a tutta larghezza: mai fuori schermo */
@@ -872,13 +877,14 @@ section[id]{ scroll-margin-top:80px; }
   }
   .hero-stage .stage-label{ display:none; } /* il nome lo dice la didascalia */
 }
-/* respiro hero su mobile: tutto un filo più in alto e più compatto */
+/* respiro hero su mobile: tutto più in alto e più compatto */
 @media (max-width:640px){
-  .panel{ padding:64px 0 96px; }
+  .panel{ padding:44px 0 128px; }
   .home-hero .home-brandmark{ margin-bottom:.14em; }
-  .home-hero .hero-loop{ margin-top:22px; }
-  .hero-loop-caption{ margin-top:12px; }
-  .home-hero .scroll-hint{ margin-top:26px; }
+  .home-hero .hero-loop{ margin-top:20px; }
+  .hero-loop-caption{ margin-top:10px; }
+  .home-hero .scroll-hint{ margin-top:22px; }
+  .hero-stage{ bottom:10vh; } /* anche il watermark sale col contenuto */
 }
 
 .scroll-hint{
