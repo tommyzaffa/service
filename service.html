@@ -17,7 +17,8 @@
 
 <header class="site-header">
   <div class="header-in">
-    <a class="back-home" href="index.html"><span aria-hidden="true">←</span>&nbsp;<span data-i18n="nav.backhome">Torna alla home</span></a>
+    <a class="brand" href="index.html">Atto<span class="brand-dot"></span></a>
+    <nav class="services-nav" data-services-nav aria-label="Servizi"></nav>
     <div class="header-tools">
       <div class="currency-switch" aria-label="Valuta">
         <button data-currency="CHF">CHF</button><span class="sep">·</span>
@@ -44,12 +45,7 @@
   </section>
 
   <div class="container">
-    <div class="flow-steps" data-flow-steps>
-      <span data-step-ind="line" data-i18n="srv.step.line">La linea</span>
-      <span data-step-ind="tier" data-i18n="srv.step.tier">Il livello</span>
-      <span data-step-ind="addons" data-i18n="srv.step.addons">I complementi</span>
-      <span data-step-ind="summary" data-i18n="srv.step.summary">Il riepilogo</span>
-    </div>
+    <div class="flow-steps" data-flow-steps></div>
   </div>
 
   <div class="container">
@@ -57,29 +53,11 @@
 
       <div class="service-main">
 
-        <!-- STEP 1 · linea -->
-        <section class="step-block" id="step-line" data-block="line">
-          <p class="kicker" data-i18n="srv.step.line">La linea</p>
-          <p class="step-hint" data-i18n="srv.line.hint">Scegli l'ambito che ti serve.</p>
-          <div class="line-cards" data-line-cards></div>
-        </section>
+        <!-- WIZARD: uno step alla volta (render via js/service.js) -->
+        <div class="wizard" data-wizard aria-live="polite"></div>
 
-        <!-- STEP 2 · tier -->
-        <section class="step-block" id="step-tier" data-block="tier">
-          <p class="kicker" data-i18n="srv.step.tier">Il livello</p>
-          <p class="step-hint" data-i18n="srv.tier.hint">Un livello alla volta: ogni tier include il precedente.</p>
-          <div class="tier-cards" data-tier-cards></div>
-        </section>
-
-        <!-- STEP 3 · add-on -->
-        <section class="step-block" id="step-addons" data-block="addons">
-          <p class="kicker" data-i18n="srv.step.addons">I complementi</p>
-          <p class="step-hint" data-i18n="srv.addons.hint">Solo i complementi compatibili con il pacchetto scelto. Apri una famiglia per vedere le voci.</p>
-          <div class="addon-families" data-addon-families></div>
-        </section>
-
-        <!-- STEP 4 · form -->
-        <section class="step-block quote-form-block" id="step-form">
+        <!-- STEP FINALE · form (visibile solo all'ultimo passo) -->
+        <section class="step-block quote-form-block" id="step-form" hidden>
           <p class="kicker" data-i18n="form.title">Parliamone</p>
           <p class="step-hint" data-i18n="form.sub">Lascia i tuoi recapiti: rispondiamo entro un giorno lavorativo.</p>
           <form data-quote-form action="https://formspree.io/f/[FORMSPREE_FORM_ID]" method="POST">
@@ -123,6 +101,7 @@
             <input type="hidden" name="_subject" value="Richiesta preventivo — Atto" />
             <input type="hidden" name="lang" value="it" data-hidden-lang />
             <input type="hidden" name="servizio" value="" data-hidden-service />
+            <input type="hidden" name="profilo" value="" data-hidden-persona />
             <input type="hidden" name="pacchetto" value="" data-hidden-package />
             <input type="hidden" name="valuta" value="CHF" data-hidden-currency />
             <textarea name="riepilogo" hidden data-hidden-summary></textarea>

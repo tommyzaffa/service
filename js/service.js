@@ -1,11 +1,15 @@
 /* ===================================================================
-   ATTO — pagina servizio v2 (service.html?id=...)
-   Flusso guidato: linea → livello → complementi → riepilogo → form.
+   ATTO — pagina servizio v3 (service.html?id=...)
+   Wizard a step singoli: chi sei → (linea via wizard) → livello →
+   complementi a bundle → form. Un passo alla volta, con indietro.
    Regole:
-   - famiglie add-on mostrate SOLO se compatibili col pacchetto scelto
-   - famiglie chiuse di default, si aprono a fisarmonica
+   - le risposte del wizard indirizzano linea e livello consigliato,
+     ma tutti i pacchetti restano visibili e selezionabili
+   - add-on solo a "gruppetti" (bundle) con prezzo unico
+     (= somma voci −10%, già precalcolato in js/data.js)
+   - famiglie exclusive → al massimo un bundle
    - totali una tantum e ricorrenti separati, CHF/EUR
-   - stringhe di catalogo tradotte via window.ATTO_CT (js/catalog-i18n.js)
+   - stringhe di catalogo tradotte via window.ATTO_CT
    =================================================================== */
 (function () {
   "use strict";
@@ -19,12 +23,21 @@
   var service = D.getService(params.get("id"));
   if (!service) { location.replace("index.html#servizi"); return; }
 
+  /* ---------- sequenza step ---------- */
+  var wizardQs = service.wizard || [];
+  var steps = wizardQs.map(function (q) { return { type: "wizard", q: q }; });
+  steps.push({ type: "tier" });
+  steps.push({ type: "addons" });
+  steps.push({ type: "form" });
+
   /* ---------- stato ---------- */
   var state = {
+    ix: 0,
+    answers: {},                       // qid -> optionId
     lineId: service.lines[0].id,
+    recTier: null,                     // tier consigliato ("Start"/"Pro"/…)
     pkgId: null,
-    sel: {},   // famId -> { items:{id:true} } | { active:true } | { tier:id }
-    open: {}   // famId -> true (fisarmonica aperta)
+    sel: {}                            // famId -> { bundleId: true }
   };
 
   /* ---------- helpers ---------- */
@@ -32,7 +45,6 @@
   function ct(s) { return window.ATTO_CT ? window.ATTO_CT(s) : s; }
   function cur() { return APP ? APP.getCurrency() : "CHF"; }
   function fmt(x) { return D.formatPrice(x, cur()); }
-  /* range prezzo con suffisso unità localizzato (/mese, /episodio…) */
   function fmtRange(p) {
     var s = D.formatRange(p, cur());
     if (p.unit === "month") return s.replace("/mese", t("quote.permonth"));
@@ -42,268 +54,293 @@
   function esc(s) {
     return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   }
+  function applyAnswers() {
+    state.lineId = service.lines[0].id;
+    state.recTier = null;
+    wizardQs.forEach(function (q) {
+      var optId = state.answers[q.id];
+      if (!optId) return;
+      var opt = q.options.find(function (o) { return o.id === optId; });
+      if (!opt) return;
+      if (opt.line) state.lineId = opt.line;
+      if (opt.tier) state.recTier = opt.tier;
+    });
+  }
   function getLine() {
     return service.lines.find(function (l) { return l.id === state.lineId; }) || service.lines[0];
   }
   function getPkg() {
     if (!state.pkgId) return null;
-    var line = getLine();
-    return line.packages.find(function (p) { return p.id === state.pkgId; }) || null;
+    return getLine().packages.find(function (p) { return p.id === state.pkgId; }) || null;
   }
-  function itemPriceLabel(it) {
+  function bundlePriceLabel(b) {
     var s = "";
-    if (it.from) s += t("svc.from") + " ";
-    if (it.approx) s += "~";
-    s += fmt(it.price);
-    if (it.unit === "month") s += t("quote.permonth");
-    else if (it.suffix) s += ct(it.suffix);
-    else if (it.unit === "each") s += t("quote.each");
+    if (b.from) s += t("svc.from") + " ";
+    if (b.approx) s += "~";
+    if (b.monthly) s += fmt(b.monthly) + t("quote.permonth");
+    else s += fmt(b.once);
     return s;
-  }
-  function scrollToEl(id) {
-    var el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   /* ---------- riferimenti DOM ---------- */
   var $name = document.querySelector("[data-service-name]");
   var $tagline = document.querySelector("[data-service-tagline]");
-  var $lines = document.querySelector("[data-line-cards]");
-  var $lineBlock = document.getElementById("step-line");
-  var $tiers = document.querySelector("[data-tier-cards]");
-  var $fams = document.querySelector("[data-addon-families]");
+  var $flow = document.querySelector("[data-flow-steps]");
+  var $wiz = document.querySelector("[data-wizard]");
+  var $formBlock = document.getElementById("step-form");
   var $rows = document.querySelector("[data-quote-rows]");
-  var $steps = document.querySelectorAll("[data-step-ind]");
+  var $panelCta = document.querySelector("[data-quote-panel] .btn");
 
   document.title = service.name + " — Atto";
 
-  /* =================================================
-     RENDER
-     ================================================= */
   function renderHead() {
     if ($name) $name.textContent = ct(service.name);
     if ($tagline) $tagline.textContent = ct(service.tagline || "");
   }
 
-  function renderSteps() {
-    var stage = state.pkgId ? "addons" : "tier";
-    var order = ["line", "tier", "addons", "summary"];
-    var stageIx = order.indexOf(stage);
-    $steps.forEach(function (el) {
-      var ix = order.indexOf(el.dataset.stepInd);
-      el.classList.toggle("done", ix < stageIx);
-      el.classList.toggle("active", ix === stageIx);
-    });
+  /* =================================================
+     INDICATORE DI PERCORSO
+     ================================================= */
+  function stepLabel(s) {
+    if (s.type === "wizard") return ct(s.q.question).replace(/\s*\?$/, "");
+    if (s.type === "tier") return t("srv.step.tier");
+    if (s.type === "addons") return t("srv.step.addons");
+    return t("srv.step.summary");
   }
-
-  function renderLines() {
-    if (!$lines) return;
-    if (service.lines.length < 2) {
-      if ($lineBlock) $lineBlock.style.display = "none";
-      return;
-    }
-    $lines.innerHTML = service.lines.map(function (l) {
-      var lo = Infinity;
-      l.packages.forEach(function (p) { if (p.from < lo) lo = p.from; });
-      return (
-        '<button type="button" class="line-card" data-line="' + l.id + '" aria-pressed="' + (l.id === state.lineId) + '">' +
-          '<span class="line-name">' + esc(ct(l.name)) + "</span>" +
-          '<span class="line-sub">' + t("svc.from") + " " + fmt(lo) + " · " + l.packages.length + " " + t("svc.packages") + "</span>" +
-        "</button>"
-      );
+  function renderFlowSteps() {
+    if (!$flow) return;
+    $flow.innerHTML = steps.map(function (s, i) {
+      var cls = i < state.ix ? "done" : i === state.ix ? "active" : "";
+      return '<span class="' + cls + '" data-goto="' + i + '" role="button">' + esc(stepLabel(s)) + "</span>";
     }).join("");
-    $lines.querySelectorAll("[data-line]").forEach(function (b) {
-      b.addEventListener("click", function () {
-        if (state.lineId === b.dataset.line) return;
-        state.lineId = b.dataset.line;
-        state.pkgId = null;
-        state.sel = {};
-        state.open = {};
-        animateTiers = true;
-        renderAll();
-        scrollToEl("step-tier");
-      });
-    });
-  }
-
-  var animateTiers = true; /* anima solo al primo render / cambio linea */
-  function renderTiers() {
-    if (!$tiers) return;
-    var line = getLine();
-    $tiers.innerHTML = line.packages.map(function (p, i) {
-      var selected = p.id === state.pkgId;
-      var hl = (p.highlights || []).map(function (h) { return "<li>" + esc(ct(h)) + "</li>"; }).join("");
-      return (
-        '<article class="tier-card' + (selected ? " selected" : "") + (animateTiers ? " anim-rise" : "") + '" style="--d:' + (i * 0.07) + 's">' +
-          '<span class="tier-tag">' + esc(p.tier) + "</span>" +
-          "<h3>" + esc(ct(p.name)) + (p.proposed ? '<span class="tag-proposed" title="' + t("srv.proposed") + '">*</span>' : "") + "</h3>" +
-          '<p class="tier-price">' + fmtRange(p) + "</p>" +
-          '<p class="tier-unit">' +
-            (p.minUnits ? t("srv.min.episodes") : (p.unit === "month" ? t("quote.monthly") : t("quote.once"))) +
-            (p.proposed ? " · * " + t("srv.proposed") : "") +
-          "</p>" +
-          "<ul>" + hl + "</ul>" +
-          '<button type="button" class="btn' + (selected ? " btn-pine" : " btn-ghost") + '" data-pkg="' + p.id + '">' +
-            (selected ? t("srv.selected") : t("srv.select")) +
-          "</button>" +
-        "</article>"
-      );
-    }).join("");
-    animateTiers = false;
-    $tiers.querySelectorAll("[data-pkg]").forEach(function (b) {
-      b.addEventListener("click", function () {
-        if (state.pkgId !== b.dataset.pkg) {
-          state.pkgId = b.dataset.pkg;
-          state.sel = {};
-          state.open = {};
-          renderAll();
-          scrollToEl("step-addons");
-        }
-      });
-    });
-  }
-
-  /* ---- famiglie add-on ---- */
-  function famSelection(famId) {
-    if (!state.sel[famId]) {
-      var fam = D.getFamily(famId);
-      state.sel[famId] = fam.type === "items" ? { items: {} } :
-                         fam.type === "block" ? { active: false } : { tier: null };
-    }
-    return state.sel[famId];
-  }
-  function famSelectedCount(fam) {
-    var s = state.sel[fam.id];
-    if (!s) return 0;
-    if (fam.type === "items") return Object.keys(s.items).filter(function (k) { return s.items[k]; }).length;
-    if (fam.type === "block") return s.active ? 1 : 0;
-    return s.tier ? 1 : 0;
-  }
-  function renderAddons() {
-    if (!$fams) return;
-    var pkg = getPkg();
-    if (!pkg) {
-      $fams.innerHTML = '<div class="addons-empty">' + t("quote.empty") + "</div>";
-      return;
-    }
-    var famIds = pkg.addons || [];
-    if (!famIds.length) {
-      $fams.innerHTML = '<div class="addons-empty">' + t("srv.addons.none") + "</div>";
-      return;
-    }
-    $fams.innerHTML = famIds.map(function (famId, fi) {
-      var fam = D.getFamily(famId);
-      if (!fam) return "";
-      var count = famSelectedCount(fam);
-      var open = !!state.open[famId];
-      var body = "";
-
-      if (fam.type === "items") {
-        var sel = famSelection(famId);
-        body += fam.items.map(function (it) {
-          if (it.section) return '<p class="fam-section">' + esc(ct(it.section)) + "</p>";
-          var checked = !!sel.items[it.id];
-          return (
-            '<label class="addon-item">' +
-              '<input type="checkbox" data-fam="' + famId + '" data-item="' + it.id + '"' + (checked ? " checked" : "") + " />" +
-              '<span class="ai-name">' + esc(ct(it.name)) + (it.note ? ' <span class="ai-unit">(' + esc(ct(it.note)) + ")</span>" : "") + "</span>" +
-              '<span class="ai-price">' + itemPriceLabel(it) + "</span>" +
-            "</label>"
-          );
-        }).join("");
-      } else if (fam.type === "block") {
-        var sb = famSelection(famId);
-        body += '<p class="fam-note">' + t("srv.included") + ": " + esc((fam.feats || []).map(ct).join(" · ")) + "</p>";
-        body += (
-          '<label class="addon-item">' +
-            '<input type="checkbox" data-block="' + famId + '"' + (sb.active ? " checked" : "") + " />" +
-            '<span class="ai-name">' + esc(ct(fam.label)) + "</span>" +
-            '<span class="ai-price">' + (fam.from ? t("svc.from") + " " : "") + fmt(fam.price) + "</span>" +
-          "</label>"
-        );
-      } else { /* tiers */
-        var st = famSelection(famId);
-        body += fam.tiers.map(function (tr) {
-          var checked = st.tier === tr.id;
-          return (
-            '<label class="addon-item">' +
-              '<input type="checkbox" data-famtier="' + famId + '" data-tier="' + tr.id + '"' + (checked ? " checked" : "") + " />" +
-              '<span class="ai-name">' + esc(ct(tr.name)) +
-                ' <span class="ai-unit">' + esc((tr.feats || []).map(ct).join(" · ")) + "</span></span>" +
-              '<span class="ai-price">' + (tr.from ? t("svc.from") + " " : "") + fmt(tr.price) + "</span>" +
-            "</label>"
-          );
-        }).join("");
-      }
-
-      return (
-        '<div class="addon-family anim-rise' + (open ? " open" : "") + (count ? " has-selection" : "") + '" data-family="' + famId + '" style="--d:' + (fi * 0.06) + 's">' +
-          '<button type="button" class="fam-head" data-famhead="' + famId + '" aria-expanded="' + open + '">' +
-            '<span class="fam-name">' + esc(ct(fam.label)) + "</span>" +
-            '<span class="fam-count"' + (count ? "" : ' style="display:none"') + ">" + count + "</span>" +
-            '<span class="fam-chevron">▾</span>' +
-          "</button>" +
-          '<div class="fam-body"><div class="fam-inner">' + body + "</div></div>" +
-        "</div>"
-      );
-    }).join("");
-
-    /* --- aggiornamenti in place (niente re-render: le transizioni vivono) --- */
-    function refreshFamily(famId) {
-      var box = $fams.querySelector('[data-family="' + famId + '"]');
-      if (!box) return;
-      var fam = D.getFamily(famId);
-      var count = famSelectedCount(fam);
-      var badge = box.querySelector(".fam-count");
-      if (badge) {
-        badge.textContent = count;
-        badge.style.display = count ? "" : "none";
-      }
-      box.classList.toggle("has-selection", count > 0);
-    }
-
-    /* eventi */
-    $fams.querySelectorAll("[data-famhead]").forEach(function (b) {
-      b.addEventListener("click", function () {
-        var id = b.dataset.famhead;
-        state.open[id] = !state.open[id];
-        var box = $fams.querySelector('[data-family="' + id + '"]');
-        if (box) box.classList.toggle("open", state.open[id]);
-        b.setAttribute("aria-expanded", String(!!state.open[id]));
-      });
-    });
-    $fams.querySelectorAll("input[data-item]").forEach(function (c) {
-      c.addEventListener("change", function () {
-        var sel = famSelection(c.dataset.fam);
-        sel.items[c.dataset.item] = c.checked;
-        refreshFamily(c.dataset.fam);
-        renderQuote();
-      });
-    });
-    $fams.querySelectorAll("input[data-block]").forEach(function (c) {
-      c.addEventListener("change", function () {
-        famSelection(c.dataset.block).active = c.checked;
-        refreshFamily(c.dataset.block);
-        renderQuote();
-      });
-    });
-    $fams.querySelectorAll("input[data-famtier]").forEach(function (c) {
-      c.addEventListener("change", function () {
-        var famId = c.dataset.famtier;
-        var sel = famSelection(famId);
-        sel.tier = c.checked ? c.dataset.tier : null;
-        $fams.querySelectorAll('input[data-famtier="' + famId + '"]').forEach(function (box) {
-          if (box !== c) box.checked = false;
-        });
-        refreshFamily(famId);
-        renderQuote();
+    $flow.querySelectorAll("[data-goto]").forEach(function (el) {
+      el.addEventListener("click", function () {
+        var ix = +el.dataset.goto;
+        if (ix < state.ix) go(ix);
       });
     });
   }
 
   /* =================================================
+     NAVIGAZIONE
+     ================================================= */
+  function go(ix) {
+    state.ix = Math.max(0, Math.min(ix, steps.length - 1));
+    renderStep();
+    var hero = document.querySelector("[data-flow-steps]");
+    if (hero) {
+      var top = hero.getBoundingClientRect().top + window.scrollY - 80;
+      if (window.scrollY > top) window.scrollTo({ top: top, behavior: "smooth" });
+    }
+  }
+  function backBtnHtml() {
+    if (state.ix === 0) return "";
+    return (
+      '<button type="button" class="wiz-back" data-wiz-back>' +
+        '<span aria-hidden="true">←</span>&nbsp;' + t("srv.back") +
+      "</button>"
+    );
+  }
+  function bindBack() {
+    var b = $wiz.querySelector("[data-wiz-back]");
+    if (b) b.addEventListener("click", function () { go(state.ix - 1); });
+  }
+
+  /* =================================================
+     STEP: WIZARD (chi sei / che tipo)
+     ================================================= */
+  function renderWizardStep(q) {
+    var chosen = state.answers[q.id] || null;
+    $wiz.innerHTML =
+      backBtnHtml() +
+      '<section class="step-block step-anim">' +
+        '<p class="kicker">' + esc(ct(service.name)) + "</p>" +
+        '<h2 class="step-question">' + esc(ct(q.question)) + "</h2>" +
+        '<p class="step-hint">' + t("srv.wizard.hint") + "</p>" +
+        '<div class="opt-cards">' +
+          q.options.map(function (o, i) {
+            return (
+              '<button type="button" class="opt-card anim-rise" style="--d:' + (i * 0.06) + 's" data-opt="' + o.id + '" aria-pressed="' + (o.id === chosen) + '">' +
+                '<span class="opt-label">' + esc(ct(o.label)) + "</span>" +
+                (o.desc ? '<span class="opt-desc">' + esc(ct(o.desc)) + "</span>" : "") +
+                '<span class="opt-arrow" aria-hidden="true">→</span>' +
+              "</button>"
+            );
+          }).join("") +
+        "</div>" +
+      "</section>";
+    bindBack();
+    $wiz.querySelectorAll("[data-opt]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var changed = state.answers[q.id] !== b.dataset.opt;
+        state.answers[q.id] = b.dataset.opt;
+        if (changed) { state.pkgId = null; state.sel = {}; }
+        go(state.ix + 1);
+      });
+    });
+  }
+
+  /* =================================================
+     STEP: LIVELLO (tutti visibili, consigliato evidenziato)
+     ================================================= */
+  function renderTierStep() {
+    applyAnswers();
+    var line = getLine();
+    var hint = state.recTier ? t("srv.tier.reco.hint") : t("srv.tier.hint");
+    $wiz.innerHTML =
+      backBtnHtml() +
+      '<section class="step-block step-anim">' +
+        '<p class="kicker">' + t("srv.step.tier") + "</p>" +
+        (service.lines.length > 1 ? '<h2 class="step-question">' + esc(ct(line.name)) + "</h2>" : "") +
+        '<p class="step-hint">' + hint + "</p>" +
+        '<div class="tier-cards">' +
+          line.packages.map(function (p, i) {
+            var selected = p.id === state.pkgId;
+            var reco = state.recTier && p.tier === state.recTier;
+            var hl = (p.highlights || []).map(function (h) { return "<li>" + esc(ct(h)) + "</li>"; }).join("");
+            return (
+              '<article class="tier-card anim-rise' + (selected ? " selected" : "") + (reco ? " recommended" : "") + '" style="--d:' + (i * 0.07) + 's">' +
+                (reco ? '<span class="tier-reco">' + t("srv.recommended") + "</span>" : "") +
+                '<span class="tier-tag">' + esc(p.tier) + "</span>" +
+                "<h3>" + esc(ct(p.name)) + (p.proposed ? '<span class="tag-proposed" title="' + t("srv.proposed") + '">*</span>' : "") + "</h3>" +
+                '<p class="tier-price">' + fmtRange(p) + "</p>" +
+                '<p class="tier-unit">' +
+                  (p.minUnits ? t("srv.min.episodes") : (p.unit === "month" ? t("quote.monthly") : t("quote.once"))) +
+                  (p.proposed ? " · * " + t("srv.proposed") : "") +
+                "</p>" +
+                "<ul>" + hl + "</ul>" +
+                '<button type="button" class="btn' + (selected ? " btn-pine" : " btn-ghost") + '" data-pkg="' + p.id + '">' +
+                  (selected ? t("srv.selected") : t("srv.select")) +
+                "</button>" +
+              "</article>"
+            );
+          }).join("") +
+        "</div>" +
+      "</section>";
+    bindBack();
+    $wiz.querySelectorAll("[data-pkg]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        if (state.pkgId !== b.dataset.pkg) { state.pkgId = b.dataset.pkg; state.sel = {}; }
+        go(state.ix + 1);
+      });
+    });
+  }
+
+  /* =================================================
+     STEP: COMPLEMENTI A BUNDLE
+     ================================================= */
+  function isBundleSelected(famId, bundleId) {
+    return !!(state.sel[famId] && state.sel[famId][bundleId]);
+  }
+  function toggleBundle(fam, bundleId) {
+    if (!state.sel[fam.id]) state.sel[fam.id] = {};
+    var on = !state.sel[fam.id][bundleId];
+    if (fam.exclusive) state.sel[fam.id] = {};
+    state.sel[fam.id][bundleId] = on;
+    if (!on) delete state.sel[fam.id][bundleId];
+  }
+  function renderAddonStep() {
+    applyAnswers();
+    var pkg = getPkg();
+    if (!pkg) { go(steps.length - 3); return; } /* torna al tier */
+    var famIds = (pkg.addons || []).filter(function (id) { return D.getFamily(id); });
+    var body;
+    if (!famIds.length) {
+      body = '<div class="addons-empty">' + t("srv.addons.none") + "</div>";
+    } else {
+      body = famIds.map(function (famId, fi) {
+        var fam = D.getFamily(famId);
+        return (
+          '<div class="bundle-group anim-rise" style="--d:' + (fi * 0.06) + 's">' +
+            '<p class="bundle-fam">' + esc(ct(fam.label)) +
+              (fam.exclusive ? ' <span class="bundle-excl">' + t("srv.exclusive") + "</span>" : "") +
+            "</p>" +
+            '<div class="bundle-cards">' +
+              fam.bundles.map(function (b) {
+                var on = isBundleSelected(famId, b.id);
+                return (
+                  '<button type="button" class="bundle-card" data-fam="' + famId + '" data-bundle="' + b.id + '" aria-pressed="' + on + '">' +
+                    '<span class="b-check" aria-hidden="true"></span>' +
+                    '<span class="b-main">' +
+                      '<span class="b-name">' + esc(ct(b.name)) + "</span>" +
+                      '<span class="b-items">' + esc(b.items.map(ct).join(" · ")) + "</span>" +
+                      (b.note ? '<span class="b-note">' + esc(ct(b.note)) + "</span>" : "") +
+                    "</span>" +
+                    '<span class="b-price">' + bundlePriceLabel(b) + "</span>" +
+                  "</button>"
+                );
+              }).join("") +
+            "</div>" +
+          "</div>"
+        );
+      }).join("");
+    }
+    $wiz.innerHTML =
+      backBtnHtml() +
+      '<section class="step-block step-anim">' +
+        '<p class="kicker">' + t("srv.step.addons") + "</p>" +
+        '<h2 class="step-question">' + t("srv.addons.title") + "</h2>" +
+        '<p class="step-hint">' + t("srv.addons.hint") + "</p>" +
+        body +
+        '<p class="wiz-actions"><button type="button" class="btn btn-pine" data-continue>' + t("srv.continue") + "</button></p>" +
+      "</section>";
+    bindBack();
+    $wiz.querySelectorAll("[data-bundle]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var fam = D.getFamily(b.dataset.fam);
+        toggleBundle(fam, b.dataset.bundle);
+        /* aggiorna in place, senza re-render (le transizioni vivono) */
+        if (fam.exclusive) {
+          $wiz.querySelectorAll('[data-fam="' + fam.id + '"]').forEach(function (el) {
+            el.setAttribute("aria-pressed", String(isBundleSelected(fam.id, el.dataset.bundle)));
+          });
+        } else {
+          b.setAttribute("aria-pressed", String(isBundleSelected(fam.id, b.dataset.bundle)));
+        }
+        renderQuote();
+      });
+    });
+    var cont = $wiz.querySelector("[data-continue]");
+    if (cont) cont.addEventListener("click", function () { go(state.ix + 1); });
+  }
+
+  /* =================================================
+     STEP: FORM (riepilogo + contatti)
+     ================================================= */
+  function renderFormStep() {
+    $wiz.innerHTML = backBtnHtml();
+    bindBack();
+  }
+
+  /* =================================================
+     RENDER STEP CORRENTE
+     ================================================= */
+  function renderStep() {
+    applyAnswers();
+    renderHead();
+    renderFlowSteps();
+    var s = steps[state.ix];
+    if ($formBlock) $formBlock.hidden = s.type !== "form";
+    if (s.type === "wizard") renderWizardStep(s.q);
+    else if (s.type === "tier") renderTierStep();
+    else if (s.type === "addons") renderAddonStep();
+    else renderFormStep();
+    renderQuote();
+  }
+
+  /* =================================================
      CALCOLO E RIEPILOGO
      ================================================= */
+  function personaLines() {
+    var out = [];
+    wizardQs.forEach(function (q) {
+      var optId = state.answers[q.id];
+      if (!optId) return;
+      var opt = q.options.find(function (o) { return o.id === optId; });
+      if (opt) out.push({ q: q.question, a: opt.label });
+    });
+    return out;
+  }
   function compute() {
     var pkg = getPkg();
     if (!pkg) return null;
@@ -325,40 +362,21 @@
     }
     out.base = base;
 
-    /* add-on */
+    /* bundle scelti */
     (pkg.addons || []).forEach(function (famId) {
       var fam = D.getFamily(famId);
       var s = state.sel[famId];
       if (!fam || !s) return;
-
-      if (fam.type === "items") {
-        var chosen = fam.items.filter(function (it) { return !it.section && s.items[it.id]; });
-        if (!chosen.length) return;
-        var famOnce = 0, famMonthly = 0;
-        chosen.forEach(function (it) {
-          if (it.unit === "month") famMonthly += it.price;
-          else famOnce += it.price;
-        });
-        out.once += famOnce;
-        out.monthly += famMonthly;
-        var val = [];
-        if (famOnce) val.push(fmt(famOnce));
-        if (famMonthly) val.push(fmt(famMonthly) + t("quote.permonth"));
+      fam.bundles.forEach(function (b) {
+        if (!s[b.id]) return;
+        if (b.monthly) out.monthly += b.monthly;
+        else out.once += b.once || 0;
         out.lines.push({
-          label: ct(fam.label),
-          sub: chosen.length + " × " + chosen.map(function (it) { return ct(it.name); }).slice(0, 3).join(", ") + (chosen.length > 3 ? "…" : ""),
-          val: val.join(" + ")
+          label: ct(fam.label) + " · " + ct(b.name),
+          sub: b.items.slice(0, 3).map(ct).join(", ") + (b.items.length > 3 ? "…" : ""),
+          val: bundlePriceLabel(b)
         });
-      } else if (fam.type === "block" && s.active) {
-        out.once += fam.price;
-        out.lines.push({ label: ct(fam.label), sub: (fam.feats || []).slice(0, 3).map(ct).join(", ") + "…", val: t("svc.from") + " " + fmt(fam.price) });
-      } else if (fam.type === "tiers" && s.tier) {
-        var tr = fam.tiers.find(function (x) { return x.id === s.tier; });
-        if (tr) {
-          out.once += tr.price;
-          out.lines.push({ label: ct(tr.name), sub: ct(fam.label), val: (tr.from ? t("svc.from") + " " : "") + fmt(tr.price) });
-        }
-      }
+      });
     });
 
     return out;
@@ -370,7 +388,6 @@
     if (!q) {
       $rows.innerHTML = '<p class="quote-empty">' + t("quote.empty") + "</p>";
       syncHiddenFields(null);
-      renderSteps();
       return;
     }
     var html = "";
@@ -388,7 +405,18 @@
     }
     $rows.innerHTML = html;
     syncHiddenFields(q);
-    renderSteps();
+  }
+
+  /* CTA del pannello: porta all'ultimo step, poi al form */
+  if ($panelCta) {
+    $panelCta.addEventListener("click", function (ev) {
+      if (steps[state.ix].type !== "form") {
+        ev.preventDefault();
+        go(steps.length - 1);
+        var f = document.getElementById("step-form");
+        if (f) f.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
   }
 
   /* =================================================
@@ -397,8 +425,9 @@
   function summaryText(q) {
     var out = [];
     out.push("Servizio: " + service.name);
+    personaLines().forEach(function (p) { out.push(p.q + " " + p.a); });
     out.push("Pacchetto: " + q.base.label + " (" + q.base.sub + ")");
-    q.lines.forEach(function (r) { out.push("Add-on: " + r.label + " — " + r.sub + " — " + r.val); });
+    q.lines.forEach(function (r) { out.push("Bundle: " + r.label + " — " + r.val); });
     if (q.once > 0) out.push("Totale una tantum (da): " + fmt(q.once));
     if (q.monthly > 0) out.push("Totale mensile (da): " + fmt(q.monthly) + "/mese");
     out.push("Valuta: " + cur());
@@ -410,6 +439,7 @@
       if (el) el.value = value;
     };
     set("[data-hidden-service]", service.name);
+    set("[data-hidden-persona]", personaLines().map(function (p) { return p.a; }).join(" · "));
     set("[data-hidden-package]", q ? q.base.label : "");
     set("[data-hidden-currency]", cur());
     set("[data-hidden-lang]", I ? I.getLang() : "it");
@@ -440,14 +470,7 @@
   /* =================================================
      BOOT + eventi globali
      ================================================= */
-  function renderAll() {
-    renderHead();
-    renderLines();
-    renderTiers();
-    renderAddons();
-    renderQuote();
-  }
-  document.addEventListener("DOMContentLoaded", renderAll);
-  document.addEventListener("atto:langchange", renderAll);
-  document.addEventListener("atto:currencychange", renderAll);
+  document.addEventListener("DOMContentLoaded", renderStep);
+  document.addEventListener("atto:langchange", renderStep);
+  document.addEventListener("atto:currencychange", renderStep);
 })();

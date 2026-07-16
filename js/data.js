@@ -1,10 +1,16 @@
 /* =============================================================
-   ATTO — Data layer (v2)
+   ATTO — Data layer (v3)
    Fonte di verità: docs/++ Pacchetti (con specifiche).xlsx
    (estratto e verificato con Tommy — vedi VERIFICA-DATI.md).
    Prezzi in CHF. unit: "once" | "month" | "episode".
-   Le feature elencate sono highlights curati; il dettaglio
-   completo resta nel foglio xlsx.
+
+   v3 (2026-07-16):
+   - Add-on riorganizzati in BUNDLE ("gruppetti"): ogni famiglia
+     ha 1–6 bundle con voci raggruppate e prezzo unico =
+     somma delle voci −10% (BUNDLE_DISCOUNT). Prezzi da
+     verificare: vedi VERIFICA-BUNDLE.md.
+   - Ogni servizio ha un "wizard": domande iniziali (chi sei /
+     che tipo) che indirizzano linea e livello consigliato.
    ============================================================= */
 
 /* ---- Valute ------------------------------------------------ */
@@ -13,391 +19,243 @@ const CURRENCIES = {
   EUR: { code: "EUR", rateFromCHF: 1.05, symbol: "€",   thousands: "." }
 };
 
+/* sconto applicato ai bundle (documentazione: i prezzi sotto
+   sono già calcolati con questo sconto sulla somma delle voci) */
+const BUNDLE_DISCOUNT = 0.10;
+
 /* ============================================================
-   FAMIGLIE ADD-ON
-   type:
-     "items" — voci singole con checkbox
-     "block" — blocco unico attivabile, prezzo "da X"
-     "tiers" — scelta di un livello (es. Photo+ e-commerce)
-   unit voce: "once" (default) | "month" | "each"
+   FAMIGLIE ADD-ON → BUNDLE
+   Ogni famiglia: { id, label, exclusive?, bundles:[...] }
+   Bundle: { id, name, items:[nomi voce], once?, monthly?,
+             from?, approx?, note? }
+   exclusive:true → si sceglie al massimo un bundle (es. Photo+
+   e-commerce, che è a livelli).
    ============================================================ */
 const ADDON_FAMILIES = {
 
   /* --- Add-on sito (Website Start/Pro/Premium) --------------- */
   web_site: {
-    id: "web_site", label: "Add-on sito", type: "items",
-    items: [
-      { id: "blog",            name: "Blog",                    price: 1000 },
-      { id: "blog_adv",        name: "Blog avanzato",           price: 1500 },
-      { id: "area_riservata",  name: "Area riservata",          price: 2000 },
-      { id: "prenotazioni",    name: "Prenotazioni",            price: 1500 },
-      { id: "crm",             name: "CRM",                     price: 1500 },
-      { id: "crm_premium",     name: "CRM Premium",             price: 2500 },
-      { id: "multilingua",     name: "Multilingua",             price: 500, unit: "each", suffix: "/lingua" },
-      { id: "area_download",   name: "Area download",           price: 500 },
-      { id: "chat_live",       name: "Chat Live",               price: 1000 },
-      { id: "whatsapp",        name: "WhatsApp Business",       price: 300 },
-      { id: "gmaps",           name: "Google Maps",             price: 200 },
-      { id: "pixel_meta",      name: "Pixel Meta",              price: 250 },
-      { id: "ganalytics",      name: "Google Analytics",        price: 300 },
-      { id: "gtm",             name: "Google Tag Manager",      price: 500 },
-      { id: "dash_kpi",        name: "Dashboard KPI",           price: 800 },
-      { id: "automazioni",     name: "Automazioni",             price: 800,  from: true },
-      { id: "newsletter",      name: "Newsletter Setup",        price: 600 },
-      { id: "email_mkt",       name: "Email Marketing",         price: 900,  from: true },
-      { id: "funnel",          name: "Funnel",                  price: 2500, from: true }
+    id: "web_site", label: "Add-on sito",
+    bundles: [
+      { id: "ws_presenza", name: "Presenza & Dati",
+        items: ["Google Maps", "Pixel Meta", "Google Analytics", "Google Tag Manager", "Dashboard KPI"],
+        once: 1845 },
+      { id: "ws_clienti", name: "Clienti & Prenotazioni",
+        items: ["WhatsApp Business", "Chat Live", "Prenotazioni", "CRM"],
+        once: 3870 },
+      { id: "ws_contenuti", name: "Contenuti & Aree riservate",
+        items: ["Blog avanzato", "Area download", "Multilingua (1 lingua)", "Area riservata"],
+        once: 4050 },
+      { id: "ws_marketing", name: "Marketing & Automazioni",
+        items: ["Newsletter Setup", "Email Marketing", "Automazioni", "Funnel"],
+        once: 4320, from: true }
     ]
   },
 
-  /* --- Photo+ per E-commerce (a livelli) ---------------------- */
+  /* --- Photo+ per E-commerce (a livelli, esclusivo) ----------- */
   photo_ecom: {
-    id: "photo_ecom", label: "Photo+", type: "tiers",
-    tiers: [
-      { id: "photo_start",   name: "Photo+ Start",   price: 500,  from: true,
-        feats: ["Shooting prodotti", "Fondo bianco", "Color correction base", "Esportazione web", "JPG HD"] },
-      { id: "photo_pro",     name: "Photo+ Pro",     price: 900,  from: true,
-        feats: ["Tutto Start", "Color grading accurato", "Ritocco professionale", "Scontorno prodotti", "Ombre realistiche", "Compressione web", "Alta risoluzione"] },
-      { id: "photo_premium", name: "Photo+ Premium", price: 1800, from: true,
-        feats: ["Tutto Pro", "Illuminotecnica professionale", "Set fotografico dedicato", "Foto ambientate (lifestyle)", "Dettagli macro", "Foto 360° (se richieste)", "Ottimizzazione e-commerce", "Archivio organizzato", "Backup cloud"] }
+    id: "photo_ecom", label: "Photo+", exclusive: true,
+    bundles: [
+      { id: "photo_start", name: "Photo+ Start", once: 500, from: true,
+        items: ["Shooting prodotti", "Fondo bianco", "Color correction base", "Esportazione web", "JPG HD"] },
+      { id: "photo_pro", name: "Photo+ Pro", once: 900, from: true,
+        items: ["Tutto Start", "Color grading accurato", "Ritocco professionale", "Scontorno prodotti", "Ombre realistiche", "Compressione web", "Alta risoluzione"] },
+      { id: "photo_premium", name: "Photo+ Premium", once: 1800, from: true,
+        items: ["Tutto Pro", "Illuminotecnica professionale", "Set fotografico dedicato", "Foto ambientate (lifestyle)", "Dettagli macro", "Foto 360° (se richieste)", "Ottimizzazione e-commerce", "Archivio organizzato", "Backup cloud"] }
     ]
   },
 
-  /* --- Video+ (Landing Campaign & E-commerce) — blocco -------- */
+  /* --- Video+ (Landing Campaign & E-commerce) ------------------ */
   video_landing: {
-    id: "video_landing", label: "Video+", type: "block", price: 1500, from: true,
-    feats: ["Hero video", "Video prodotto", "Video servizio", "Video testimonial", "Montaggio", "Color grading"]
+    id: "video_landing", label: "Video+",
+    bundles: [
+      { id: "vl_campaign", name: "Video Campaign", once: 1500, from: true,
+        items: ["Hero video", "Video prodotto", "Video servizio", "Video testimonial", "Montaggio", "Color grading"] }
+    ]
   },
 
-  /* --- Photo+ per Landing Campaign Pro — blocco ---------------- */
+  /* --- Photo+ per Landing Campaign Pro ------------------------- */
   photo_landing: {
-    id: "photo_landing", label: "Photo+", type: "block", price: 900, from: true,
-    feats: ["Shooting dedicato", "Foto prodotto", "Foto ambiente", "Color grading", "Ritocco"]
+    id: "photo_landing", label: "Photo+",
+    bundles: [
+      { id: "pl_campaign", name: "Photo Campaign", once: 900, from: true,
+        items: ["Shooting dedicato", "Foto prodotto", "Foto ambiente", "Color grading", "Ritocco"] }
+    ]
   },
 
-  /* --- Design+ (Landing Campaign) — blocco --------------------- */
+  /* --- Design+ (Landing Campaign) ------------------------------ */
   design_landing: {
-    id: "design_landing", label: "Design+", type: "block", price: 500, from: true,
-    feats: ["Grafica personalizzata", "Icone", "Infografiche", "Illustrazioni", "Mockup"]
+    id: "design_landing", label: "Design+",
+    bundles: [
+      { id: "dl_kit", name: "Design Kit", once: 500, from: true,
+        items: ["Grafica personalizzata", "Icone", "Infografiche", "Illustrazioni", "Mockup"] }
+    ]
   },
 
   /* --- AI+ (varianti per gruppo) -------------------------------- */
   ai_landing: {
-    id: "ai_landing", label: "AI+", type: "items",
-    items: [
-      { id: "ai_images", name: "AI Images", price: 400 },
-      { id: "ai_ads",    name: "AI Ads",    price: 600 },
-      { id: "ai_copy",   name: "AI Copy",   price: 500 },
-      { id: "ai_video",  name: "AI Video",  price: 900 },
-      { id: "ai_voice",  name: "AI Voice",  price: 300 }
+    id: "ai_landing", label: "AI+",
+    bundles: [
+      { id: "ai_visual",  name: "AI Visual",    items: ["AI Images", "AI Ads"],              once: 900 },
+      { id: "ai_content", name: "AI Contenuti", items: ["AI Copy", "AI Video", "AI Voice"],  once: 1530 }
     ]
   },
   ai_social: {
-    id: "ai_social", label: "AI+", type: "items",
-    items: [
-      { id: "ai_images",   name: "AI Images",   price: 400 },
-      { id: "ai_ads",      name: "AI Ads",      price: 600 },
-      { id: "ai_carousel", name: "AI Carousel", price: 500 },
-      { id: "ai_video",    name: "AI Video",    price: 900 },
-      { id: "ai_voice",    name: "AI Voice",    price: 300 }
+    id: "ai_social", label: "AI+",
+    bundles: [
+      { id: "ai_visual",  name: "AI Visual",    items: ["AI Images", "AI Ads"],                 once: 900 },
+      { id: "ai_content", name: "AI Contenuti", items: ["AI Carousel", "AI Video", "AI Voice"], once: 1530 }
     ]
   },
   ai_video: {
-    id: "ai_video", label: "AI+", type: "items",
-    items: [
-      { id: "ai_poster",     name: "AI Poster evento",        price: 500 },
-      { id: "ai_visual",     name: "AI Visual campagne",      price: 700 },
-      { id: "ai_trailer",    name: "AI Trailer",              price: 900 },
-      { id: "ai_reel",       name: "AI Reel",                 price: 400 },
-      { id: "ai_voiceover",  name: "AI Voice Over",           price: 300 },
-      { id: "ai_avatar",     name: "AI Avatar presentatore",  price: 800 },
-      { id: "ai_trad",       name: "AI Traduzioni",           price: 300 },
-      { id: "ai_subs",       name: "AI Sottotitoli",          price: 250 },
-      { id: "ai_repurpose",  name: "AI Repurposing contenuti",price: 700 },
-      { id: "ai_clips",      name: "AI Clip automatiche",     price: 500 },
-      { id: "ai_photo_enh",  name: "AI Foto enhancement",     price: 300 },
-      { id: "ai_upscale",    name: "AI Video upscaling",      price: 500 }
+    id: "ai_video", label: "AI+",
+    bundles: [
+      { id: "ai_promo",   name: "AI Promo",         items: ["AI Poster evento", "AI Visual campagne", "AI Trailer", "AI Reel"],          once: 2250 },
+      { id: "ai_lingue",  name: "AI Voce & Lingue", items: ["AI Voice Over", "AI Traduzioni", "AI Sottotitoli"],                          once: 765 },
+      { id: "ai_extra",   name: "AI Contenuti extra", items: ["AI Avatar presentatore", "AI Repurposing contenuti", "AI Clip automatiche"], once: 1800 },
+      { id: "ai_qualita", name: "AI Qualità",       items: ["AI Foto enhancement", "AI Video upscaling"],                                 once: 720 }
     ]
   },
   ai_podcast: {
-    id: "ai_podcast", label: "AI+", type: "items",
-    items: [
-      { id: "ai_intro",     name: "AI Intro Video",       price: 500 },
-      { id: "ai_outro",     name: "AI Outro",             price: 300 },
-      { id: "ai_voiceover", name: "AI Voice Over",        price: 300 },
-      { id: "ai_avatar",    name: "AI Avatar host",       price: 800 },
-      { id: "ai_clips",     name: "AI Clip automatiche",  price: 500 },
-      { id: "ai_subs",      name: "AI Sottotitoli",       price: 250 },
-      { id: "ai_trad",      name: "AI Traduzioni",        price: 300 },
-      { id: "ai_repurpose", name: "AI Repurposing",       price: 700 },
-      { id: "ai_thumb",     name: "AI Thumbnail",         price: 300 },
-      { id: "ai_trailer",   name: "AI Trailer Podcast",   price: 700 }
+    id: "ai_podcast", label: "AI+",
+    bundles: [
+      { id: "ai_branding", name: "AI Branding episodio", items: ["AI Intro Video", "AI Outro", "AI Thumbnail"],                              once: 990 },
+      { id: "ai_distr",    name: "AI Distribuzione",     items: ["AI Clip automatiche", "AI Repurposing", "AI Trailer Podcast"],             once: 1710 },
+      { id: "ai_voce",     name: "AI Voce & Lingue",     items: ["AI Voice Over", "AI Sottotitoli", "AI Traduzioni", "AI Avatar host"],      once: 1485 }
     ]
   },
   ai_personal: {
-    id: "ai_personal", label: "AI+", type: "items",
-    items: [
-      { id: "ai_intro",     name: "AI Intro Video",       price: 500 },
-      { id: "ai_outro",     name: "AI Outro",             price: 300 },
-      { id: "ai_voiceover", name: "AI Voice Over",        price: 300 },
-      { id: "ai_avatar",    name: "AI Avatar host",       price: 800 },
-      { id: "ai_clips",     name: "AI Clip automatiche",  price: 500 },
-      { id: "ai_subs",      name: "AI Sottotitoli",       price: 250 },
-      { id: "ai_trad",      name: "AI Traduzioni",        price: 300 },
-      { id: "ai_repurpose", name: "AI Repurposing",       price: 700 },
-      { id: "ai_thumb",     name: "AI Thumbnail",         price: 300 }
+    id: "ai_personal", label: "AI+",
+    bundles: [
+      { id: "ai_branding", name: "AI Branding",      items: ["AI Intro Video", "AI Outro", "AI Thumbnail"],                            once: 990 },
+      { id: "ai_distr",    name: "AI Distribuzione", items: ["AI Clip automatiche", "AI Repurposing"],                                 once: 1080 },
+      { id: "ai_voce",     name: "AI Voce & Lingue", items: ["AI Voice Over", "AI Sottotitoli", "AI Traduzioni", "AI Avatar host"],    once: 1485 }
     ]
   },
 
   /* --- LinkedIn+ (Social) --------------------------------------- */
   linkedin: {
-    id: "linkedin", label: "LinkedIn+", type: "items",
-    items: [
-      { id: "li_profilo",   name: "Ottimizzazione profilo",  price: 400 },
-      { id: "li_azienda",   name: "Profilo aziendale",       price: 700 },
-      { id: "li_piano",     name: "Piano editoriale",        price: 600 },
-      { id: "li_gestione",  name: "Gestione LinkedIn",       price: 900,  unit: "month" },
-      { id: "li_ceo",       name: "Personal branding CEO",   price: 1500, unit: "month" },
-      { id: "li_leadgen",   name: "Lead generation",         price: 1500, from: true },
-      { id: "li_employer",  name: "Employer branding",       price: 2500, from: true }
+    id: "linkedin", label: "LinkedIn+",
+    bundles: [
+      { id: "li_setup",    name: "LinkedIn Setup",    items: ["Ottimizzazione profilo", "Profilo aziendale", "Piano editoriale"], once: 1530 },
+      { id: "li_gestione", name: "LinkedIn Gestione", items: ["Gestione LinkedIn", "Personal branding CEO"],                      monthly: 2160 },
+      { id: "li_business", name: "LinkedIn Business", items: ["Lead generation", "Employer branding"],                            once: 3600, from: true }
     ]
   },
 
   /* --- Web+ (varianti per gruppo) -------------------------------- */
   web_social: {
-    id: "web_social", label: "Web+", type: "items",
-    items: [
-      { id: "landing",      name: "Landing page",      price: 1500 },
-      { id: "website",      name: "Website",           price: 2500, approx: true },
-      { id: "website_prem", name: "Website Premium",   price: 5000, approx: true },
-      { id: "funnel",       name: "Funnel",            price: 2500 },
-      { id: "seo",          name: "SEO",               price: 1000 },
-      { id: "crm",          name: "CRM",               price: 2000 },
-      { id: "newsletter",   name: "Newsletter",        price: 500 },
-      { id: "automazioni",  name: "Automazioni",       price: 1000 }
+    id: "web_social", label: "Web+",
+    bundles: [
+      { id: "wb_base",     name: "Base web",         items: ["Landing page", "SEO", "Newsletter"],        once: 2700 },
+      { id: "wb_completo", name: "Sito completo",    items: ["Website", "CRM", "Automazioni"],            once: 4950, approx: true },
+      { id: "wb_funnel",   name: "Vendita & Funnel", items: ["Website Premium", "Funnel"],                once: 6750, approx: true }
     ]
   },
   web_video_eventi: {
-    id: "web_video_eventi", label: "Web+", type: "items",
-    items: [
-      { id: "landing_ev",   name: "Landing page evento",  price: 1500 },
-      { id: "sito_ev",      name: "Sito evento",          price: 3000 },
-      { id: "iscrizioni",   name: "Pagina iscrizioni",    price: 500 },
-      { id: "sponsor",      name: "Pagina sponsor",       price: 500 },
-      { id: "programma",    name: "Programma online",     price: 500 },
-      { id: "form_iscr",    name: "Form iscrizione",      price: 500 },
-      { id: "biglietteria", name: "Biglietteria online",  price: 2500 },
-      { id: "accrediti",    name: "Accrediti stampa",     price: 500 },
-      { id: "gallery",      name: "Gallery post-evento",  price: 700 },
-      { id: "download",     name: "Area download media",  price: 500 },
-      { id: "streaming",    name: "Streaming integrato",  price: 2500 }
+    id: "web_video_eventi", label: "Web+",
+    bundles: [
+      { id: "wv_presenza",   name: "Presenza evento",       items: ["Landing page evento", "Programma online", "Pagina sponsor"],       once: 2250 },
+      { id: "wv_sito",       name: "Sito evento completo",  items: ["Sito evento", "Gallery post-evento", "Area download media"],       once: 3780 },
+      { id: "wv_iscrizioni", name: "Iscrizioni & Biglietti", items: ["Pagina iscrizioni", "Form iscrizione", "Biglietteria online"],    once: 3150 },
+      { id: "wv_media",      name: "Media & Streaming",     items: ["Accrediti stampa", "Streaming integrato"],                         once: 2700 }
     ]
   },
   web_video_std: {
-    id: "web_video_std", label: "Web+", type: "items",
-    items: [
-      { id: "landing_ev",   name: "Landing page evento",  price: 1500 },
-      { id: "sito_ev",      name: "Sito evento",          price: 3500 },
-      { id: "iscrizioni",   name: "Pagina iscrizioni",    price: 500 },
-      { id: "sponsor",      name: "Pagina sponsor",       price: 500 },
-      { id: "programma",    name: "Programma online",     price: 500 },
-      { id: "form_iscr",    name: "Form iscrizione",      price: 500 },
-      { id: "biglietteria", name: "Biglietteria online",  price: 2500 },
-      { id: "accrediti",    name: "Accrediti stampa",     price: 500 },
-      { id: "gallery",      name: "Gallery post-evento",  price: 700 },
-      { id: "download",     name: "Area download media",  price: 500 },
-      { id: "streaming",    name: "Streaming integrato",  price: 2500 }
+    id: "web_video_std", label: "Web+",
+    bundles: [
+      { id: "wv_presenza",   name: "Presenza evento",       items: ["Landing page evento", "Programma online", "Pagina sponsor"],       once: 2250 },
+      { id: "wv_sito",       name: "Sito evento completo",  items: ["Sito evento", "Gallery post-evento", "Area download media"],       once: 4230 },
+      { id: "wv_iscrizioni", name: "Iscrizioni & Biglietti", items: ["Pagina iscrizioni", "Form iscrizione", "Biglietteria online"],    once: 3150 },
+      { id: "wv_media",      name: "Media & Streaming",     items: ["Accrediti stampa", "Streaming integrato"],                         once: 2700 }
     ]
   },
   web_video_corp: {
-    id: "web_video_corp", label: "Web+", type: "items",
-    items: [
-      { id: "landing_ev",   name: "Landing page evento",  price: 1500 },
-      { id: "sito_ev",      name: "Sito evento",          price: 3500 },
-      { id: "iscrizioni",   name: "Pagina iscrizioni",    price: 700 },
-      { id: "sponsor",      name: "Pagina sponsor",       price: 500 },
-      { id: "programma",    name: "Programma online",     price: 500 },
-      { id: "form_iscr",    name: "Form iscrizione",      price: 500 },
-      { id: "biglietteria", name: "Biglietteria online",  price: 2500 },
-      { id: "accrediti",    name: "Accrediti stampa",     price: 500 },
-      { id: "gallery",      name: "Gallery post-evento",  price: 700 },
-      { id: "download",     name: "Area download media",  price: 500 },
-      { id: "streaming",    name: "Streaming integrato",  price: 2500 }
+    id: "web_video_corp", label: "Web+",
+    bundles: [
+      { id: "wv_presenza",   name: "Presenza evento",       items: ["Landing page evento", "Programma online", "Pagina sponsor"],       once: 2250 },
+      { id: "wv_sito",       name: "Sito evento completo",  items: ["Sito evento", "Gallery post-evento", "Area download media"],       once: 4230 },
+      { id: "wv_iscrizioni", name: "Iscrizioni & Biglietti", items: ["Pagina iscrizioni", "Form iscrizione", "Biglietteria online"],    once: 3330 },
+      { id: "wv_media",      name: "Media & Streaming",     items: ["Accrediti stampa", "Streaming integrato"],                         once: 2700 }
     ]
   },
   web_podcast: {
-    id: "web_podcast", label: "Web+", type: "items",
-    items: [
-      { id: "landing_pod",  name: "Landing podcast",   price: 1500 },
-      { id: "sito_pod",     name: "Sito podcast",      price: 3500 },
-      { id: "archivio",     name: "Archivio episodi",  price: 1000, note: "il costo della banda cresce con il pubblico del podcast" },
-      { id: "blog_pod",     name: "Blog podcast",      price: 1500 },
-      { id: "newsletter",   name: "Newsletter",        price: 500 },
-      { id: "seo_pod",      name: "SEO podcast",       price: 1000 },
-      { id: "area_premium", name: "Area premium",      price: 2000 },
-      { id: "crm",          name: "CRM",               price: 1500 }
+    id: "web_podcast", label: "Web+",
+    bundles: [
+      { id: "wp_presenza",  name: "Presenza podcast",      items: ["Landing podcast", "SEO podcast", "Newsletter"],          once: 2700 },
+      { id: "wp_sito",      name: "Sito podcast completo", items: ["Sito podcast", "Archivio episodi", "Blog podcast"],      once: 5400,
+        note: "il costo della banda dell'archivio cresce con il pubblico del podcast" },
+      { id: "wp_community", name: "Community & Premium",   items: ["Area premium", "CRM"],                                   once: 3150 }
     ]
   },
   web_personal: {
-    id: "web_personal", label: "Web+", type: "items",
-    items: [
-      { id: "landing",      name: "Landing web",   price: 1500 },
-      { id: "complex",      name: "Complex web",   price: 3500 },
-      { id: "blog",         name: "Blog",          price: 1500 },
-      { id: "newsletter",   name: "Newsletter",    price: 500 },
-      { id: "seo",          name: "SEO",           price: 1000 },
-      { id: "area_premium", name: "Area premium",  price: 2000 },
-      { id: "crm",          name: "CRM",           price: 1500 }
+    id: "web_personal", label: "Web+",
+    bundles: [
+      { id: "wpe_presenza",  name: "Presenza online",      items: ["Landing web", "SEO", "Newsletter"],   once: 2700 },
+      { id: "wpe_sito",      name: "Sito completo",        items: ["Complex web", "Blog"],                once: 4500 },
+      { id: "wpe_community", name: "Community & Premium",  items: ["Area premium", "CRM"],                once: 3150 }
     ]
   },
 
   /* --- Social+ (varianti) ----------------------------------------- */
   social_video: {
-    id: "social_video", label: "Social+", type: "items",
-    sections: true,
-    items: [
-      { section: "Strategia" },
-      { id: "piano_ed",   name: "Piano editoriale evento",           price: 700 },
-      { id: "piano_pub",  name: "Piano pubblicazione",               price: 500 },
-      { id: "strat_lan",  name: "Strategia lancio",                  price: 900 },
-      { section: "Produzione" },
-      { id: "reel_extra", name: "Reel aggiuntivi",                   price: 1500 },
-      { id: "stories",    name: "Stories live",                      price: 900 },
-      { id: "backstage",  name: "Backstage",                         price: 1200 },
-      { id: "interviste", name: "Interviste",                        price: 400 },
-      { id: "sponsor",    name: "Contenuti sponsor",                 price: 300, unit: "each", suffix: "/reel" },
-      { id: "speaker",    name: "Contenuti speaker",                 price: 1200 },
-      { id: "espositori", name: "Contenuti espositori",              price: 1800 },
-      { section: "Gestione" },
-      { id: "gest_acc",   name: "Gestione account durante l'evento", price: 600 },
-      { id: "community",  name: "Community management",              price: 400, unit: "each" },
-      { id: "moderaz",    name: "Moderazione commenti",              price: 600 },
-      { id: "copertura",  name: "Copertura live",                    price: 600 },
-      { section: "Post evento" },
-      { id: "recap",      name: "Recap social",                      price: 700 },
-      { id: "carousel",   name: "Carousel fotografici",              price: 300 },
-      { id: "ringraz",    name: "Ringraziamenti",                    price: 800 }
+    id: "social_video", label: "Social+",
+    bundles: [
+      { id: "sv_strategia",  name: "Strategia",         items: ["Piano editoriale evento", "Piano pubblicazione", "Strategia lancio"],                              once: 1890 },
+      { id: "sv_produzione", name: "Produzione live",   items: ["Reel aggiuntivi", "Stories live", "Backstage", "Interviste"],                                      once: 3600 },
+      { id: "sv_partner",    name: "Contenuti partner", items: ["Contenuti speaker", "Contenuti espositori", "Contenuti sponsor (1 reel)"],                          once: 2970 },
+      { id: "sv_gestione",   name: "Gestione evento",   items: ["Gestione account durante l'evento", "Community management", "Moderazione commenti", "Copertura live"], once: 1980 },
+      { id: "sv_post",       name: "Post evento",       items: ["Recap social", "Carousel fotografici", "Ringraziamenti"],                                          once: 1620 }
     ]
   },
   social_video_adv: {
-    id: "social_video_adv", label: "Social+", type: "items",
-    sections: true,
-    items: [
-      { section: "Strategia" },
-      { id: "piano_ed",   name: "Piano editoriale evento",           price: 700 },
-      { id: "piano_pub",  name: "Piano pubblicazione",               price: 500 },
-      { id: "strat_lan",  name: "Strategia lancio",                  price: 900 },
-      { section: "Produzione" },
-      { id: "reel_extra", name: "Reel aggiuntivi",                   price: 1500 },
-      { id: "stories",    name: "Stories live",                      price: 900 },
-      { id: "backstage",  name: "Backstage",                         price: 1200 },
-      { id: "interviste", name: "Interviste",                        price: 400 },
-      { id: "sponsor",    name: "Contenuti sponsor",                 price: 300, unit: "each", suffix: "/reel" },
-      { id: "speaker",    name: "Contenuti speaker",                 price: 1200 },
-      { id: "espositori", name: "Contenuti espositori",              price: 1800 },
-      { section: "Gestione" },
-      { id: "gest_acc",   name: "Gestione account durante l'evento", price: 600 },
-      { id: "community",  name: "Community management",              price: 400, unit: "each" },
-      { id: "moderaz",    name: "Moderazione commenti",              price: 600 },
-      { id: "copertura",  name: "Copertura live",                    price: 600 },
-      { section: "Post evento" },
-      { id: "recap",      name: "Recap social",                      price: 700 },
-      { id: "carousel",   name: "Carousel fotografici",              price: 300 },
-      { id: "highlight",  name: "Highlight reel",                    price: 800 }
+    id: "social_video_adv", label: "Social+",
+    bundles: [
+      { id: "sv_strategia",  name: "Strategia",         items: ["Piano editoriale evento", "Piano pubblicazione", "Strategia lancio"],                              once: 1890 },
+      { id: "sv_produzione", name: "Produzione live",   items: ["Reel aggiuntivi", "Stories live", "Backstage", "Interviste"],                                      once: 3600 },
+      { id: "sv_partner",    name: "Contenuti partner", items: ["Contenuti speaker", "Contenuti espositori", "Contenuti sponsor (1 reel)"],                          once: 2970 },
+      { id: "sv_gestione",   name: "Gestione evento",   items: ["Gestione account durante l'evento", "Community management", "Moderazione commenti", "Copertura live"], once: 1980 },
+      { id: "sv_post",       name: "Post campagna",     items: ["Recap social", "Carousel fotografici", "Highlight reel"],                                          once: 1620 }
     ]
   },
   social_podcast: {
-    id: "social_podcast", label: "Social+", type: "items",
-    items: [
-      { id: "calendario",  name: "Calendario pubblicazioni", price: 500 },
-      { id: "gest_yt",     name: "Gestione YouTube",         price: 700, unit: "month" },
-      { id: "gest_ig",     name: "Gestione Instagram",       price: 700, unit: "month" },
-      { id: "gest_sp",     name: "Gestione Spotify",         price: 400, unit: "month" },
-      { id: "grafiche",    name: "Grafiche stories",         price: 300 },
-      { id: "copertine",   name: "Copertine reel",           price: 250 },
-      { id: "reel_promo",  name: "1 reel promozionale",      price: 300 },
-      { id: "reel3",       name: "Pacchetto 3 reel",         price: 800 },
-      { id: "reel5",       name: "Pacchetto 5 reel",         price: 1250 },
-      { id: "shorts",      name: "Shorts YouTube",           price: 250, unit: "each" },
-      { id: "carousel",    name: "Carousel",                 price: 300 }
+    id: "social_podcast", label: "Social+",
+    bundles: [
+      { id: "sp_gestione", name: "Gestione canali",     items: ["Gestione YouTube", "Gestione Instagram", "Gestione Spotify"],                    monthly: 1620 },
+      { id: "sp_kit",      name: "Kit grafico social",  items: ["Calendario pubblicazioni", "Grafiche stories", "Copertine reel", "Carousel"],    once: 1215 },
+      { id: "sp_promo",    name: "Promo Reel & Shorts", items: ["Pacchetto 5 reel", "2 Shorts YouTube"],                                          once: 1575 }
     ]
   },
 
   /* --- Merch+ ------------------------------------------------------ */
   merch_social: {
-    id: "merch_social", label: "Merch+", type: "items",
-    items: [
-      { id: "magliette",  name: "Magliette",     price: 500 },
-      { id: "felpe",      name: "Felpe",         price: 600 },
-      { id: "cappellini", name: "Cappellini",    price: 400 },
-      { id: "shopper",    name: "Shopper",       price: 400 },
-      { id: "packaging",  name: "Packaging",     price: 900 },
-      { id: "rollup",     name: "Roll-up",       price: 450 },
-      { id: "banner",     name: "Banner",        price: 300 },
-      { id: "gadget",     name: "Gadget",        price: 600 },
-      { id: "kit",        name: "Kit completo",  price: 2500, from: true }
+    id: "merch_social", label: "Merch+",
+    bundles: [
+      { id: "me_abbigliamento", name: "Abbigliamento",      items: ["Magliette", "Felpe", "Cappellini"],                            once: 1350 },
+      { id: "me_stampa",        name: "Immagine & Stampa",  items: ["Shopper", "Packaging", "Roll-up", "Banner", "Gadget"],         once: 2385 },
+      { id: "me_kit",           name: "Kit completo",       items: ["Merchandising completo su misura"],                            once: 2500, from: true }
     ]
   },
   merch_full: {
-    id: "merch_full", label: "Merch+", type: "items",
-    items: [
-      { id: "magliette",  name: "Magliette",            price: 500 },
-      { id: "felpe",      name: "Felpe",                price: 600 },
-      { id: "cappellini", name: "Cappellini",           price: 400 },
-      { id: "shopper",    name: "Shopper",              price: 400 },
-      { id: "packaging",  name: "Packaging",            price: 900 },
-      { id: "rollup",     name: "Roll-up",              price: 450 },
-      { id: "banner",     name: "Banner",               price: 300 },
-      { id: "gadget",     name: "Gadget",               price: 600 },
-      { id: "lanyard",    name: "Lanyard",              price: 400 },
-      { id: "badge",      name: "Badge personalizzati", price: 350 },
-      { id: "braccialetti", name: "Braccialetti",       price: 300 },
-      { id: "totem",      name: "Totem",                price: 900 },
-      { id: "bandiere",   name: "Bandiere",             price: 700 },
-      { id: "giftbag",    name: "Gift bag",             price: 900 },
-      { id: "kit",        name: "Kit completo",         price: 2500, from: true }
+    id: "merch_full", label: "Merch+",
+    bundles: [
+      { id: "me_abbigliamento", name: "Abbigliamento",      items: ["Magliette", "Felpe", "Cappellini"],                                            once: 1350 },
+      { id: "me_stampa",        name: "Immagine & Stampa",  items: ["Shopper", "Packaging", "Roll-up", "Banner", "Gadget"],                         once: 2385 },
+      { id: "me_evento",        name: "Kit evento",         items: ["Lanyard", "Badge personalizzati", "Braccialetti", "Totem", "Bandiere", "Gift bag"], once: 3195 },
+      { id: "me_kit",           name: "Kit completo",       items: ["Merchandising completo su misura"],                                            once: 2500, from: true }
     ]
   },
 
   /* --- Graphics+ (video) -------------------------------------------- */
   graphics_video: {
-    id: "graphics_video", label: "Graphics+", type: "items",
-    sections: true,
-    items: [
-      { section: "Comunicazione" },
-      { id: "logo_ev",    name: "Logo evento",                 price: 800 },
-      { id: "identita",   name: "Identità grafica evento",     price: 2000 },
-      { id: "brandkit",   name: "Brand kit evento",            price: 1500 },
-      { section: "Promozione" },
-      { id: "locandina",  name: "Locandina",                   price: 500 },
-      { id: "flyer",      name: "Flyer",                       price: 350 },
-      { id: "manifesto",  name: "Manifesto",                   price: 450 },
-      { id: "banner_web", name: "Banner web",                  price: 250 },
-      { id: "banner_st",  name: "Banner stampa",               price: 350 },
-      { id: "adv_social", name: "ADV social",                  price: 300 },
-      { section: "Social" },
-      { id: "tpl_post",   name: "Template post",               price: 250 },
-      { id: "tpl_story",  name: "Template stories",            price: 250 },
-      { id: "carousel",   name: "Carousel",                    price: 300 },
-      { id: "countdown",  name: "Countdown",                   price: 200 },
-      { id: "speaker",    name: "Speaker card",                price: 250 },
-      { id: "sponsor",    name: "Sponsor card",                price: 250 },
-      { section: "Evento" },
-      { id: "accrediti",  name: "Accrediti",                   price: 300 },
-      { id: "badge",      name: "Badge",                       price: 300 },
-      { id: "pass_staff", name: "Pass staff",                  price: 250 },
-      { id: "pass_vip",   name: "Pass VIP",                    price: 300 },
-      { id: "programma",  name: "Programma evento",            price: 500 },
-      { id: "mappa",      name: "Mappa evento",                price: 400 },
-      { id: "segnaletica",name: "Segnaletica",                 price: 700 },
-      { id: "totem",      name: "Totem",                       price: 500 },
-      { id: "slide",      name: "Slide palco",                 price: 600 },
-      { id: "ledwall",    name: "Grafiche LED wall",           price: 900 },
-      { id: "overlay",    name: "Overlay streaming",           price: 800 },
-      { section: "Post evento" },
-      { id: "report",     name: "Report grafico",              price: 600 },
-      { id: "album",      name: "Album fotografico",           price: 700 },
-      { id: "ringraz_sp", name: "Ringraziamenti sponsor",      price: 300 },
-      { id: "certificati",name: "Certificati partecipazione",  price: 250 }
+    id: "graphics_video", label: "Graphics+",
+    bundles: [
+      { id: "gr_identita",  name: "Identità evento",   items: ["Logo evento", "Identità grafica evento", "Brand kit evento"],                                                          once: 3870 },
+      { id: "gr_promo",     name: "Promozione",        items: ["Locandina", "Flyer", "Manifesto", "Banner web", "Banner stampa", "ADV social"],                                        once: 1980 },
+      { id: "gr_socialkit", name: "Social kit",        items: ["Template post", "Template stories", "Carousel", "Countdown", "Speaker card", "Sponsor card"],                          once: 1350 },
+      { id: "gr_materiali", name: "Materiali evento",  items: ["Accrediti", "Badge", "Pass staff", "Pass VIP", "Programma evento", "Mappa evento", "Segnaletica", "Totem"],            once: 2925 },
+      { id: "gr_palco",     name: "Palco & Digitale",  items: ["Slide palco", "Grafiche LED wall", "Overlay streaming"],                                                               once: 2070 },
+      { id: "gr_post",      name: "Post evento",       items: ["Report grafico", "Album fotografico", "Ringraziamenti sponsor", "Certificati partecipazione"],                          once: 1665 }
     ]
   }
 };
@@ -406,6 +264,8 @@ const ADDON_FAMILIES = {
    CATALOGO SERVIZI
    Ogni servizio ha una o più "linee"; ogni linea ha i tier.
    Package: { id, name, tier, from, to, unit, highlights, addons }
+   wizard: domande iniziali. Option: { id, label, desc?,
+     line? (imposta la linea), tier? (livello consigliato) }
    ============================================================ */
 const HL_VIDEO = {
   start: ["Brief e pianificazione riprese", "1 operatore video, riprese monocamera", "Montaggio professionale", "Color correction e ottimizzazione audio", "Titolazione base", "Versione HD e web"],
@@ -416,8 +276,22 @@ const HL_VIDEO = {
 
 const SERVICES = [
   {
-    id: "branding", name: "Branding & Identità", icon: "pen-tool",
+    id: "branding", name: "Branding & Identità", short: "Branding", icon: "pen-tool",
     tagline: "Identità visive costruite per durare: logo, sistema, strategia.",
+    wizard: [
+      { id: "who", question: "Chi sei?",
+        options: [
+          { id: "privato",  label: "Privato / libero professionista", desc: "Un'identità personale o una nuova attività individuale.", tier: "Start" },
+          { id: "piccola",  label: "Piccola attività",                desc: "Negozio, ristorante, studio, realtà locale.",             tier: "Start" },
+          { id: "pmi",      label: "PMI",                             desc: "Azienda con un team e un mercato da presidiare.",         tier: "Pro" },
+          { id: "grande",   label: "Azienda strutturata",             desc: "Più sedi, più reparti, esigenze complesse.",              tier: "Premium" }
+        ]},
+      { id: "goal", question: "Da dove partiamo?",
+        options: [
+          { id: "nuovo",      label: "Parto da zero",              desc: "Serve un'identità nuova, costruita da capo.",              line: "identity" },
+          { id: "rebranding", label: "Ho già un brand da rinnovare", desc: "Rivedere e rilanciare un'identità esistente.",           line: "rebranding" }
+        ]}
+    ],
     lines: [
       { id: "identity", name: "Brand Identity", packages: [
         { id: "brand_start", name: "Brand Identity Start", tier: "Start", from: 1500, to: 3000, unit: "once",
@@ -441,8 +315,23 @@ const SERVICES = [
     ]
   },
   {
-    id: "web", name: "Web & Digital", icon: "monitor",
+    id: "web", name: "Web & Digital", short: "Web", icon: "monitor",
     tagline: "Siti, e-commerce e landing progettati per convertire con eleganza.",
+    wizard: [
+      { id: "who", question: "Chi sei?",
+        options: [
+          { id: "privato", label: "Privato / libero professionista", desc: "Un sito personale o per la tua attività individuale.", tier: "Start" },
+          { id: "piccola", label: "Piccola attività",                desc: "Negozio, ristorante, studio, realtà locale.",           tier: "Start" },
+          { id: "pmi",     label: "PMI",                             desc: "Azienda con un team e un mercato da presidiare.",       tier: "Pro" },
+          { id: "grande",  label: "Azienda strutturata",             desc: "Più sedi, più reparti, esigenze complesse.",            tier: "Premium" }
+        ]},
+      { id: "need", question: "Cosa ti serve?",
+        options: [
+          { id: "sito",    label: "Un sito",                  desc: "Presentare l'attività e farsi trovare.",            line: "website" },
+          { id: "ecom",    label: "Vendere online",           desc: "Un e-commerce con catalogo e pagamenti.",           line: "ecommerce" },
+          { id: "landing", label: "Una campagna",             desc: "Landing page e funnel per una campagna.",           line: "landing" }
+        ]}
+    ],
     lines: [
       { id: "website", name: "Website", packages: [
         { id: "web_start", name: "Website Start", tier: "Start", from: 1500, to: 3500, unit: "once",
@@ -477,8 +366,17 @@ const SERVICES = [
     ]
   },
   {
-    id: "social", name: "Social Media", icon: "share-2",
+    id: "social", name: "Social Media", short: "Social", icon: "share-2",
     tagline: "Presenza continua, contenuti curati, crescita misurabile.",
+    wizard: [
+      { id: "who", question: "Chi sei?",
+        options: [
+          { id: "privato", label: "Privato / creator",    desc: "Un profilo personale da far crescere con metodo.",   tier: "Start" },
+          { id: "piccola", label: "Piccola attività",     desc: "Negozio, ristorante, studio, realtà locale.",        tier: "Start" },
+          { id: "pmi",     label: "PMI",                  desc: "Azienda con un team e un mercato da presidiare.",    tier: "Pro" },
+          { id: "grande",  label: "Azienda strutturata",  desc: "Più canali, più mercati, presenza continua.",        tier: "Premium" }
+        ]}
+    ],
     lines: [
       { id: "social", name: "Gestione Social", packages: [
         { id: "social_start", name: "Social Start", tier: "Start", from: 900, to: 1800, unit: "month",
@@ -494,8 +392,23 @@ const SERVICES = [
     ]
   },
   {
-    id: "video", name: "Video", icon: "video",
+    id: "video", name: "Video", short: "Video", icon: "video",
     tagline: "Produzioni su misura: eventi, fashion, corporate, commercial.",
+    wizard: [
+      { id: "who", question: "Chi sei?",
+        options: [
+          { id: "privato", label: "Privato",              desc: "Un progetto personale o un evento privato.",        tier: "Start" },
+          { id: "azienda", label: "Azienda",              desc: "Una produzione per la tua impresa.",                tier: "Pro" },
+          { id: "ente",    label: "Ente / organizzazione", desc: "Istituzione, associazione, organizzatore.",        tier: "Pro" }
+        ]},
+      { id: "type", question: "Per cosa ti serve il video?",
+        options: [
+          { id: "evento",     label: "Un evento",               desc: "Copertura completa di un evento.",                line: "eventi" },
+          { id: "fashion",    label: "Fashion & musica",        desc: "Editoriali, sfilate, live, videoclip.",           line: "fashion" },
+          { id: "corporate",  label: "Comunicazione aziendale", desc: "Video istituzionali, interviste, presentazioni.", line: "corporate" },
+          { id: "commercial", label: "Campagna pubblicitaria",  desc: "Spot e contenuti ADV per una campagna.",          line: "commercial" }
+        ]}
+    ],
     lines: [
       { id: "eventi", name: "Eventi", packages: [
         { id: "ev_start",   name: "Video Start · Eventi",   tier: "Start",   from: 900,  to: 1500,  unit: "once", highlights: HL_VIDEO.start,   addons: ["web_video_eventi", "social_video", "ai_video", "merch_full", "graphics_video"] },
@@ -524,9 +437,17 @@ const SERVICES = [
     ]
   },
   {
-    id: "podcast", name: "Podcast", icon: "mic",
+    id: "podcast", name: "Podcast", short: "Podcast", icon: "mic",
     tagline: "Dallo studio alla distribuzione: il tuo podcast, fatto bene.",
     note: "Prezzi per episodio · minimo 4 episodi",
+    wizard: [
+      { id: "who", question: "Chi sei?",
+        options: [
+          { id: "creator", label: "Privato / creator",  desc: "Un progetto personale da avviare o far crescere.",  tier: "Start" },
+          { id: "azienda", label: "Azienda",            desc: "Un podcast di brand o di settore.",                 tier: "Pro" },
+          { id: "media",   label: "Media / ente",       desc: "Produzione editoriale o istituzionale.",            tier: "Premium" }
+        ]}
+    ],
     lines: [
       { id: "podcast", name: "Podcast", packages: [
         { id: "pod_start", name: "Podcast Start", tier: "Start", from: 700, to: 1200, unit: "episode", minUnits: 4,
@@ -542,8 +463,16 @@ const SERVICES = [
     ]
   },
   {
-    id: "personal", name: "Personal Branding", icon: "user",
+    id: "personal", name: "Personal Branding", short: "Personal", icon: "user",
     tagline: "La tua immagine pubblica, gestita con metodo e discrezione.",
+    wizard: [
+      { id: "who", question: "Chi sei?",
+        options: [
+          { id: "emergente",     label: "Creator / figura emergente",        desc: "Stai costruendo la tua presenza pubblica.",            tier: "Start" },
+          { id: "professionista", label: "Imprenditore / professionista",    desc: "La tua immagine sostiene la tua attività.",            tier: "Pro" },
+          { id: "pubblica",      label: "Figura pubblica",                   desc: "Esposizione alta, serve gestione completa.",           tier: "Premium" }
+        ]}
+    ],
     lines: [
       { id: "personal", name: "Personal Brand", packages: [
         { id: "pers_start", name: "Personal Brand Start", tier: "Start", from: 900, to: 1800, unit: "month",
@@ -559,8 +488,21 @@ const SERVICES = [
     ]
   },
   {
-    id: "sport", name: "Sport & Team", icon: "trophy",
+    id: "sport", name: "Sport & Team", short: "Sport", icon: "trophy",
     tagline: "Atleti, squadre e società: comunicazione all'altezza del campo.",
+    wizard: [
+      { id: "who", question: "Chi sei?",
+        options: [
+          { id: "atleta", label: "Atleta",             desc: "La tua immagine sportiva, gestita da professionisti.", line: "atleta" },
+          { id: "team",   label: "Società / squadra",  desc: "La comunicazione del club, dentro e fuori dal campo.", line: "team" }
+        ]},
+      { id: "level", question: "A che livello?",
+        options: [
+          { id: "emergente",   label: "Emergente",        desc: "Stai costruendo il tuo percorso.",                 tier: "Start" },
+          { id: "competitivo", label: "Competitivo",      desc: "Livello alto, sponsor e visibilità in crescita.",  tier: "Pro" },
+          { id: "pro",         label: "Professionistico", desc: "Massima esposizione, gestione completa.",          tier: "Premium" }
+        ]}
+    ],
     lines: [
       { id: "atleta", name: "Atleta", packages: [
         { id: "sport_start", name: "Sport Brand Start", tier: "Start", from: 900, to: 1500, unit: "month",
@@ -587,8 +529,16 @@ const SERVICES = [
     ]
   },
   {
-    id: "artist", name: "Artisti & Musica", icon: "music",
+    id: "artist", name: "Artisti & Musica", short: "Musica", icon: "music",
     tagline: "Release, live e immagine: una direzione artistica coerente.",
+    wizard: [
+      { id: "stage", question: "A che punto sei?",
+        options: [
+          { id: "emergente", label: "Emergente",          desc: "Le prime release, la prima immagine coerente.",       tier: "Start" },
+          { id: "crescita",  label: "In crescita",        desc: "Pubblico in aumento, serve una direzione artistica.", tier: "Pro" },
+          { id: "affermato", label: "Affermato / team",   desc: "Progetto strutturato, gestione completa.",            tier: "Premium" }
+        ]}
+    ],
     lines: [
       { id: "artist", name: "Artist Brand", packages: [
         { id: "artist_start", name: "Artist Brand Start", tier: "Start", from: 1200, to: 2000, unit: "month",
@@ -646,8 +596,14 @@ function getPackage(pkgId) {
 
 function getFamily(famId) { return ADDON_FAMILIES[famId] || null; }
 
+function getBundle(famId, bundleId) {
+  const fam = ADDON_FAMILIES[famId];
+  if (!fam) return null;
+  return fam.bundles.find(b => b.id === bundleId) || null;
+}
+
 /* Esposizione globale (script tag, nessun bundler) */
 window.ATTO_DATA = {
-  CURRENCIES, SERVICES, ADDON_FAMILIES, TEAM,
-  formatPrice, formatRange, getService, getPackage, getFamily, UNIT_SUFFIX
+  CURRENCIES, SERVICES, ADDON_FAMILIES, TEAM, BUNDLE_DISCOUNT,
+  formatPrice, formatRange, getService, getPackage, getFamily, getBundle, UNIT_SUFFIX
 };

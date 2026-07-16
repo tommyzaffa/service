@@ -23,6 +23,7 @@
 <header class="site-header">
   <div class="header-in">
     <a class="brand" href="index.html">Atto<span class="brand-dot"></span></a>
+    <nav class="services-nav" data-services-nav aria-label="Servizi"></nav>
     <div class="header-tools">
       <div class="currency-switch" aria-label="Valuta">
         <button data-currency="CHF">CHF</button><span class="sep">·</span>
@@ -40,21 +41,39 @@
 
 <main>
 
-  <!-- HERO = SCELTA -->
-  <section class="hero-choice" id="servizi">
+  <!-- 1 · HERO — presentazione + animazione in loop -->
+  <section class="panel home-hero">
     <div class="container">
       <p class="kicker anim-rise" style="--d:0s" data-i18n="hero.kicker">Studio creativo · Lugano &amp; Zürich</p>
-      <h1 class="anim-rise" style="--d:.08s" data-i18n-html="hero.title">Comunicazione su misura,<br>fatta con criterio.</h1>
-      <p class="hero-sub anim-rise" style="--d:.16s" data-i18n="hero.pick">Scegli da dove partire. Il preventivo si compone da sé.</p>
+      <h1 class="home-brandmark anim-rise" style="--d:.08s">Atto<span class="brand-dot"></span></h1>
+      <p class="lede anim-rise" style="--d:.16s" data-i18n="home.hero.claim">Diamo forma all'immagine di imprese e persone: branding, web, video e contenuti, fatti con criterio.</p>
+      <div class="hero-loop anim-rise" style="--d:.28s" data-hero-loop></div>
+      <p class="hero-loop-caption anim-rise" style="--d:.34s" aria-hidden="true"><span data-loop-caption>&nbsp;</span></p>
+      <a class="scroll-hint anim-rise" style="--d:.4s" href="#servizi"><span data-i18n="hero.cta">Scopri i servizi</span>&nbsp;<span class="hint-arrow" aria-hidden="true">↓</span></a>
+    </div>
+    <!-- palco: l'icona attiva, enorme, si disegna e si ritrae (solo desktop) -->
+    <div class="hero-stage" data-hero-stage aria-hidden="true">
+      <div class="stage-icon" data-stage-icon></div>
+      <p class="stage-label" data-stage-label></p>
+    </div>
+  </section>
+
+  <!-- 2 · SERVIZI = SCELTA -->
+  <section class="panel" id="servizi">
+    <div class="container reveal">
+      <p class="kicker" data-i18n="home.services.kicker">I servizi</p>
+      <h2 class="panel-title" data-i18n="home.services.title">Da dove vuoi cominciare?</h2>
+      <p class="hero-sub" data-i18n="hero.pick">Scegli da dove partire. Il preventivo si compone da sé.</p>
       <div class="tiles-grid" data-services-grid></div>
     </div>
   </section>
 
-  <!-- STUDIO — tre parole, non un discorso -->
-  <section class="section">
+  <!-- 3 · STUDIO -->
+  <section class="panel panel-studio">
     <div class="container reveal">
       <p class="kicker" data-i18n="home.about.kicker">Lo studio</p>
-      <div class="pillars">
+      <h2 class="panel-title" data-i18n-html="about.title">Sobri per scelta,<br>precisi per abitudine.</h2>
+      <div class="pillars" style="margin-top:2.4rem;">
         <div class="pillar">
           <h3 class="serif-i" data-i18n="home.p1.t">Affidabile</h3>
           <p class="muted" data-i18n="home.p1.x">Un solo interlocutore, standard alti, consegne puntuali.</p>
@@ -68,26 +87,35 @@
           <p class="muted" data-i18n="home.p3.x">Progetti pensati per durare e crescere nel tempo.</p>
         </div>
       </div>
-      <p style="margin-top:2.2rem;"><a class="link-arrow" href="about.html" data-i18n="home.about.cta">Conosci lo studio</a></p>
+      <p style="margin-top:2.6rem;"><a class="btn" href="about.html" data-i18n="home.about.cta">Conosci lo studio</a></p>
     </div>
   </section>
 
-  <!-- LAVORI -->
-  <section class="section">
+  <!-- 4 · LAVORI -->
+  <section class="panel panel-work">
     <div class="container reveal">
       <p class="kicker" data-i18n="work.tag">Lavori</p>
-      <h2 data-i18n="work.title">Una selezione dei nostri lavori.</h2>
-      <p style="margin-top:2.2rem;"><a class="link-arrow" href="work.html" data-i18n="home.work.cta">Guarda i lavori</a></p>
+      <h2 class="panel-title" data-i18n="work.title">Una selezione dei nostri lavori.</h2>
+      <p class="lede" data-i18n="home.work.sub">Progetti scelti, raccontati con calma: il portfolio completo è in preparazione.</p>
+      <div class="work-frames" aria-hidden="true">
+        <div class="work-frame"></div>
+        <div class="work-frame"></div>
+        <div class="work-frame"></div>
+      </div>
+      <p style="margin-top:2.4rem;"><a class="btn" href="work.html" data-i18n="home.work.cta">Guarda i lavori</a></p>
     </div>
   </section>
 
-  <!-- CTA -->
-  <section class="section band-dark">
+  <!-- 5 · CTA PREVENTIVO -->
+  <section class="panel band-dark">
     <div class="container reveal">
       <p class="kicker" data-i18n="contact.tag">Contatti</p>
-      <h2 data-i18n="contact.title">Raccontaci il progetto.</h2>
-      <p class="lede" data-i18n="contact.sub">Rispondiamo in fretta, nella tua lingua.</p>
-      <p style="margin-top:1.8rem;"><a class="btn" href="contact.html" data-i18n="nav.quote">Richiedi un preventivo</a></p>
+      <h2 class="panel-title" data-i18n="contact.title">Raccontaci il progetto.</h2>
+      <p class="lede" data-i18n="home.cta.sub">Componi il preventivo in pochi passaggi, oppure scrivici direttamente: rispondiamo nella tua lingua.</p>
+      <div class="hero-actions">
+        <a class="btn" href="#servizi" data-i18n="svc.explore">Componi il preventivo</a>
+        <a class="btn" href="contact.html" data-i18n="nav.contact">Contatti</a>
+      </div>
     </div>
   </section>
 

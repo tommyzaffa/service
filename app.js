@@ -83,6 +83,54 @@
   window.ATTO_APP = { getCurrency: getCurrency, setCurrency: setCurrency };
 
   document.addEventListener("DOMContentLoaded", function () {
+    /* ---------- nav servizi nell'header ---------- */
+    var navMount = document.querySelector("[data-services-nav]");
+    if (navMount && D) {
+      var currentId = null;
+      if (/service\.html$/.test(location.pathname)) {
+        try { currentId = new URLSearchParams(location.search).get("id"); } catch (e) {}
+      }
+      var closeNav = function () {
+        navMount.classList.remove("open");
+        var t = navMount.querySelector(".nav-toggle");
+        if (t) t.setAttribute("aria-expanded", "false");
+      };
+      var renderNav = function () {
+        var links = D.SERVICES.map(function (s) {
+          var label = window.ATTO_CT ? window.ATTO_CT(s.short) : s.short;
+          return (
+            '<a class="nav-svc" href="service.html?id=' + s.id + '"' +
+              (s.id === currentId ? ' aria-current="page"' : "") + ">" +
+              '<span class="nav-svc-icon">' + (ICONS[s.id] || "") + "</span>" +
+              '<span class="nav-svc-label">' + label + "</span>" +
+            "</a>"
+          );
+        }).join("");
+        navMount.innerHTML =
+          '<button class="nav-toggle" type="button" aria-expanded="false" aria-haspopup="true">' +
+            "<span>" + (I ? I.t("nav.services") : "Servizi") + "</span>" +
+            '<span class="nav-caret" aria-hidden="true">▾</span>' +
+          "</button>" +
+          '<div class="nav-links">' + links + "</div>";
+        var toggle = navMount.querySelector(".nav-toggle");
+        if (toggle) {
+          toggle.addEventListener("click", function (ev) {
+            ev.stopPropagation();
+            var open = navMount.classList.toggle("open");
+            toggle.setAttribute("aria-expanded", open ? "true" : "false");
+          });
+        }
+      };
+      renderNav();
+      document.addEventListener("atto:langchange", renderNav);
+      document.addEventListener("click", function (ev) {
+        if (navMount.classList.contains("open") && !navMount.contains(ev.target)) closeNav();
+      });
+      document.addEventListener("keydown", function (ev) {
+        if (ev.key === "Escape") closeNav();
+      });
+    }
+
     /* ---------- i18n ---------- */
     if (I) {
       I.apply();
@@ -140,6 +188,86 @@
       renderTiles();
       document.addEventListener("atto:langchange", renderTiles);
       document.addEventListener("atto:currencychange", renderTiles);
+    }
+
+    /* ---------- hero loop (home): icone che si disegnano a turno ---------- */
+    var heroLoop = document.querySelector("[data-hero-loop]");
+    if (heroLoop && D) {
+      var renderLoop = function () {
+        heroLoop.innerHTML = D.SERVICES.map(function (s) {
+          var label = window.ATTO_CT ? window.ATTO_CT(s.short) : s.short;
+          return (
+            '<a class="loop-ic" href="service.html?id=' + s.id + '" title="' + label + '" aria-label="' + label + '">' +
+              (ICONS[s.id] || "") +
+            "</a>"
+          );
+        }).join("");
+      };
+      renderLoop();
+      document.addEventListener("atto:langchange", renderLoop);
+
+      /* carosello vivo: l'evidenziazione viaggia da sola tra le icone (tutte
+         sempre visibili); l'icona attiva appare enorme sul palco a destra,
+         si ritrae con eleganza e la prossima si disegna. In pausa al hover. */
+      var $cap = document.querySelector("[data-loop-caption]");
+      var $stage = document.querySelector("[data-hero-stage]");
+      var $stageIcon = $stage ? $stage.querySelector("[data-stage-icon]") : null;
+      var $stageLabel = $stage ? $stage.querySelector("[data-stage-label]") : null;
+      var noMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      var liveIx = -1, stageTimer = null;
+      var labelOf = function (ix) {
+        var s = D.SERVICES[ix];
+        return window.ATTO_CT ? window.ATTO_CT(s.short) : s.short;
+      };
+      var setCaption = function (ix) {
+        if (!$cap) return;
+        $cap.textContent = labelOf(ix);
+        $cap.classList.remove("cap-swap");
+        void $cap.offsetWidth; /* riavvia l'animazione */
+        $cap.classList.add("cap-swap");
+      };
+      var setStage = function (ix, instant) {
+        if (!$stage || !$stageIcon) return;
+        var swap = function () {
+          $stageIcon.innerHTML = ICONS[D.SERVICES[ix].id] || "";
+          if ($stageLabel) $stageLabel.textContent = labelOf(ix);
+          void $stage.offsetWidth;
+          $stage.classList.add("show"); /* la nuova si disegna */
+        };
+        clearTimeout(stageTimer);
+        if (instant || noMotion) { swap(); return; }
+        $stage.classList.remove("show"); /* la precedente si ritrae */
+        stageTimer = setTimeout(swap, 520);
+      };
+      var activate = function (ix, instant) {
+        var ics = heroLoop.querySelectorAll(".loop-ic");
+        if (!ics.length) return;
+        liveIx = ix;
+        ics.forEach(function (el, i) { el.classList.toggle("is-live", i === ix); });
+        setCaption(ix);
+        setStage(ix, instant);
+      };
+      activate(0, true);
+      if (!noMotion) {
+        setInterval(function () {
+          var n = heroLoop.querySelectorAll(".loop-ic").length;
+          if (!n || document.hidden) return;
+          if (heroLoop.matches(":hover")) return; /* pausa: comanda il mouse */
+          activate((liveIx + 1) % n);
+        }, 2800);
+        /* al hover palco e didascalia seguono il mouse */
+        heroLoop.addEventListener("mouseover", function (e) {
+          var a = e.target.closest ? e.target.closest(".loop-ic") : null;
+          if (!a) return;
+          var ics = Array.prototype.slice.call(heroLoop.querySelectorAll(".loop-ic"));
+          var ix = ics.indexOf(a);
+          if (ix >= 0 && ix !== liveIx) activate(ix);
+        });
+        /* dopo un cambio lingua, ripristina lo stato attivo */
+        document.addEventListener("atto:langchange", function () {
+          activate(Math.max(0, liveIx), true);
+        });
+      }
     }
 
     /* ---------- render team (about) ---------- */

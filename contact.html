@@ -17,8 +17,13 @@
 
 <header class="site-header">
   <div class="header-in">
-    <a class="back-home" href="index.html"><span aria-hidden="true">←</span>&nbsp;<span data-i18n="nav.backhome">Torna alla home</span></a>
+    <a class="brand" href="index.html">Atto<span class="brand-dot"></span></a>
+    <nav class="services-nav" data-services-nav aria-label="Servizi"></nav>
     <div class="header-tools">
+      <div class="currency-switch" aria-label="Valuta">
+        <button data-currency="CHF">CHF</button><span class="sep">·</span>
+        <button data-currency="EUR">EUR</button>
+      </div>
       <div class="lang-switch" aria-label="Lingua">
         <button data-lang="it">IT</button><span class="sep">·</span>
         <button data-lang="en">EN</button><span class="sep">·</span>
@@ -108,6 +113,7 @@
 
 <script src="js/data.js"></script>
 <script src="js/i18n.js"></script>
+<script src="js/catalog-i18n.js"></script>
 <script src="app.js"></script>
 <script>
 (function () {
